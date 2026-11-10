@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Chosen Palette: Alvinegro Praiano & Santos Ouro (Background: #f4f4f5 zinc-100, Header/Pitch: #09090b slate-950, Accents: #f59e0b amber-500 / #d97706 gold, Cards: #ffffff with high contrast black & gold borders) -->
+    <!-- Application Structure Plan: 1. Start Screen (Tela de Início) with pre-draft tactical formation selection (4-4-2 default, 4-3-3, 4-2-3-1) & Santos FC Crest hero badge. 2. Side-by-Side Draft Workspace with anti-repetition year sampling and strict position locks. 3. Correct Left/Right pitch orientation (LE/PE on left, LD/PD on right) and staggered vertical midfield positioning (recuados vs. avançados). 4. 28 Complete Historic Santos FC Squads (1958-2025) ensuring 100% position coverage. 5. Interactive Historic League Engine (Tabela Evolutiva) featuring 20 legendary Brazilian historic teams. 6. Round-by-round live animated simulation or instant finished table mode. 7. Integrated Cards Archive and Era Analytics. -->
+    <!-- Visualization & Content Choices: 1. Custom CSS HTML Santos FC Crest (Shield polygon clip-path, gold stars, black header with S.F.C. text, diagonal alvinegro stripes). 2. Complete 11-player rosters for 28 distinct historic years (1958-2025). 3. Dynamic cooldown buffer preventing year repetition. 4. Chart.js for Era Analytics. NO SVG graphics. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santos FC - Draft 38-0 & Liga de Times Históricos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .gold-glow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+        .alvinegro-stripe {
+            background: repeating-linear-gradient(
+                90deg,
+                #000000,
+                #000000 16px,
+                #ffffff 16px,
+                #ffffff 32px
+            );
+        }
+        .pitch-bg {
+            background-color: #052e16;
+            background-image: radial-gradient(#15803d 1.5px, transparent 0);
+            background-size: 20px 20px;
+        }
+
+        /* CUSTOM CSS SANTOS FC CREST (BRASÃO HISTÓRICO) */
+        .sfc-shield-container {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            user-select: none;
+        }
+        .sfc-stars {
+            color: #f59e0b;
+            font-size: 9px;
+            line-height: 1;
+            margin-bottom: -1px;
+            letter-spacing: 2px;
+            font-weight: 900;
+        }
+        
+        /* Large Crest */
+        .sfc-shield-lg {
+            width: 50px;
+            height: 62px;
+            background: #ffffff;
+            border: 2.5px solid #f59e0b;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 72%, 50% 100%, 0% 72%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+        .sfc-shield-lg .sfc-header {
+            background: #000000;
+            height: 38%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 11px;
+            letter-spacing: -0.5px;
+            border-bottom: 1.5px solid #f59e0b;
+        }
+        .sfc-shield-lg .sfc-body {
+            height: 62%;
+            width: 100%;
+            background: repeating-linear-gradient(
+                -55deg,
+                #000000,
+                #000000 6px,
+                #ffffff 6px,
+                #ffffff 12px
+            );
+        }
+
+        /* Medium Crest */
+        .sfc-shield-md {
+            width: 32px;
+            height: 40px;
+            background: #ffffff;
+            border: 2px solid #f59e0b;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 72%, 50% 100%, 0% 72%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        .sfc-shield-md .sfc-header {
+            background: #000000;
+            height: 38%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 8px;
+            letter-spacing: -0.5px;
+            border-bottom: 1px solid #f59e0b;
+        }
+        .sfc-shield-md .sfc-body {
+            height: 62%;
+            width: 100%;
+            background: repeating-linear-gradient(
+                -55deg,
+                #000000,
+                #000000 4px,
+                #ffffff 4px,
+                #ffffff 8px
+            );
+        }
+
+        /* Small Crest */
+        .sfc-shield-sm {
+            width: 20px;
+            height: 25px;
+            background: #ffffff;
+            border: 1.5px solid #f59e0b;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 72%, 50% 100%, 0% 72%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .sfc-shield-sm .sfc-header {
+            background: #000000;
+            height: 38%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 6px;
+            border-bottom: 1px solid #f59e0b;
+        }
+        .sfc-shield-sm .sfc-body {
+            height: 62%;
+            width: 100%;
+            background: repeating-linear-gradient(
+                -55deg,
+                #000000,
+                #000000 3px,
+                #ffffff 3px,
+                #ffffff 6px
+            );
+        }
+
+        /* Watermark Crest on Pitch */
+        .sfc-shield-pitch {
+            width: 120px;
+            height: 150px;
+            background: #ffffff;
+            border: 4px solid #f59e0b;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 72%, 50% 100%, 0% 72%);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .sfc-shield-pitch .sfc-header {
+            background: #000000;
+            height: 38%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 24px;
+            letter-spacing: -1px;
+            border-bottom: 3px solid #f59e0b;
+        }
+        .sfc-shield-pitch .sfc-body {
+            height: 62%;
+            width: 100%;
+            background: repeating-linear-gradient(
+                -55deg,
+                #000000,
+                #000000 12px,
+                #ffffff 12px,
+                #ffffff 24px
+            );
+        }
+
+        @keyframes diceSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.25); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .dice-anim {
+            animation: diceSpin 0.45s ease-in-out;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { border-color: rgba(245, 158, 11, 0.8); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+            50% { border-color: rgba(251, 191, 36, 1); box-shadow: 0 0 22px rgba(245, 158, 11, 0.9); }
+        }
+        .slot-target-highlight {
+            animation: pulseGlow 1.1s infinite ease-in-out;
+            cursor: pointer !important;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-zinc-100 text-zinc-900 font-sans min-h-screen flex flex-col selection:bg-amber-400 selection:text-black">
+
+    <!-- Top Alvinegro Banner Stripe -->
+    <div class="h-2 w-full alvinegro-stripe"></div>
+
+    <!-- START SCREEN / TELA DE INÍCIO -->
+    <div id="start-screen" class="fixed inset-0 z-50 bg-black/95 text-white flex items-center justify-center p-4 overflow-y-auto">
+        <div class="max-w-2xl w-full bg-zinc-900 border-2 border-amber-400 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6 relative overflow-hidden my-auto">
+            <div class="absolute -right-10 -bottom-10 text-9xl font-black text-zinc-800 opacity-30 select-none pointer-events-none">
+                1912
+            </div>
+
+            <!-- Santos FC Hero Crest -->
+            <div class="sfc-shield-container mx-auto hover:scale-105 transition transform cursor-pointer" onclick="startGame()">
+                <div class="sfc-stars text-amber-400 text-xs">★ ★</div>
+                <div class="sfc-shield-lg border-2 border-amber-400 shadow-2xl">
+                    <div class="sfc-header">S.F.C.</div>
+                    <div class="sfc-body"></div>
+                </div>
+            </div>
+
+            <div class="space-y-2 relative z-10">
+                <span class="text-xs font-black uppercase tracking-widest text-amber-400">Desafio Histórico Alvinegro</span>
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white flex items-center justify-center gap-2">
+                    SANTOS FC <span class="text-amber-400">DRAFT 38-0</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-zinc-300 max-w-lg mx-auto leading-relaxed">
+                    Escolha a sua formação tática antes do sorteio inicial e monte seu XI dos sonhos com <strong class="text-amber-400">28 esquadrões históricos completos (1958 a 2025)</strong> sem repetição de anos.
+                </p>
+            </div>
+
+            <!-- PRE-DRAFT FORMATION SELECTOR -->
+            <div class="bg-black/90 rounded-2xl p-4 border border-amber-400/60 text-left space-y-3 relative z-10">
+                <label class="block text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                    <span>📋 1. Escolha a Formação Tática (Antes do Sorteio):</span>
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <label id="start-form-label-442" onclick="selectStartFormation('4-4-2')" class="cursor-pointer border-2 border-amber-400 bg-amber-400/10 p-3 rounded-xl transition flex flex-col justify-between space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-black text-amber-400 text-sm">4-4-2</span>
+                            <input type="radio" name="start-formation" value="4-4-2" checked class="accent-amber-400">
+                        </div>
+                        <span class="text-[10px] text-zinc-300 font-bold leading-tight">Cadenciado (Volantes + 2 Meias Armadores)</span>
+                    </label>
+
+                    <label id="start-form-label-433" onclick="selectStartFormation('4-3-3')" class="cursor-pointer border-2 border-zinc-800 bg-zinc-900 p-3 rounded-xl hover:border-zinc-700 transition flex flex-col justify-between space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-black text-white text-sm">4-3-3</span>
+                            <input type="radio" name="start-formation" value="4-3-3" class="accent-amber-400">
+                        </div>
+                        <span class="text-[10px] text-zinc-400 font-bold leading-tight">Tradicional (Volante Recuado + 2 Pontas)</span>
+                    </label>
+
+                    <label id="start-form-label-4231" onclick="selectStartFormation('4-2-3-1')" class="cursor-pointer border-2 border-zinc-800 bg-zinc-900 p-3 rounded-xl hover:border-zinc-700 transition flex flex-col justify-between space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-black text-white text-sm">4-2-3-1</span>
+                            <input type="radio" name="start-formation" value="4-2-3-1" class="accent-amber-400">
+                        </div>
+                        <span class="text-[10px] text-zinc-400 font-bold leading-tight">Equilibrado (Duplo Volante + Trinca Ofensiva)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Rules Summary -->
+            <div class="bg-black/70 rounded-2xl p-4 border border-zinc-800 text-left space-y-2 text-xs text-zinc-300 relative z-10">
+                <h3 class="font-black text-white uppercase text-[11px] tracking-wider border-b border-zinc-800 pb-1.5 flex items-center justify-between">
+                    <span>📜 Regras do Draft Anti-Repetição:</span>
+                    <span class="text-amber-400 text-[10px]">28 Anos Sem Repetição</span>
+                </h3>
+                <ul class="space-y-1.5 text-[11px]">
+                    <li class="flex items-center gap-2">
+                        <span class="bg-amber-400 text-black font-black w-4 h-4 rounded-full flex items-center justify-center text-[10px]">1</span>
+                        <span>Selecione um jogador do ano sorteado no painel lateral.</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="bg-amber-400 text-black font-black w-4 h-4 rounded-full flex items-center justify-center text-[10px]">2</span>
+                        <span>Clique na vaga compatível no campo tático para escalá-lo.</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="bg-amber-400 text-black font-black w-4 h-4 rounded-full flex items-center justify-center text-[10px]">3</span>
+                        <span>Um novo ano (ainda não sorteado) é revelado automaticamente (Max 2 rerolls).</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="pt-1 relative z-10">
+                <button onclick="startGame()" class="w-full py-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-base uppercase tracking-wider rounded-2xl shadow-xl transition transform active:scale-95 border-2 border-white flex items-center justify-center gap-2">
+                    <span>🎲 CONFIRMAR ESCALAÇÃO & SORTEAR 1º ANO</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="bg-black text-white border-b-2 border-amber-400 sticky top-0 z-40 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <!-- Santos FC Shield Crest in Header -->
+                <button onclick="showStartScreen()" class="sfc-shield-container hover:scale-105 transition" title="Mudar Formação / Tela de Início">
+                    <div class="sfc-stars">★ ★</div>
+                    <div class="sfc-shield-md">
+                        <div class="sfc-header">S.F.C.</div>
+                        <div class="sfc-body"></div>
+                    </div>
+                </button>
+
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                        SANTOS FC <span class="text-amber-400">DRAFT 38-0</span>
+                    </h1>
+                    <p class="text-xs text-zinc-400 font-medium">Liga de Esquadrões Históricos & 28 Anos Completos</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap gap-1.5 bg-zinc-900 p-1.5 rounded-xl border border-zinc-800 text-xs font-bold">
+                <button onclick="switchTab('builder')" id="tab-builder" class="px-3.5 py-2 rounded-lg transition-all bg-amber-400 text-black font-black shadow flex items-center gap-1.5">
+                    🎲 Draft Interativo
+                </button>
+                <button onclick="switchTab('table')" id="tab-table" class="px-3.5 py-2 rounded-lg transition-all text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-1.5">
+                    🏆 Tabela da Liga Histórica
+                </button>
+                <button onclick="switchTab('cards')" id="tab-cards" class="px-3.5 py-2 rounded-lg transition-all text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-1.5">
+                    🎴 Acervo por Temporada
+                </button>
+                <button onclick="switchTab('analytics')" id="tab-analytics" class="px-3.5 py-2 rounded-lg transition-all text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-1.5">
+                    📊 Análise de Eras
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- ================= TAB: DRAFT WORKSPACE ================= -->
+        <section id="section-builder" class="space-y-6">
+            
+            <!-- Status Bar -->
+            <div class="bg-black text-white rounded-2xl p-4 border-2 border-amber-400/80 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="bg-amber-400 text-black font-black text-xs px-3 py-1 rounded-lg uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="sfc-shield-container">
+                            <span class="sfc-shield-sm" style="width:14px; height:18px;">
+                                <span class="sfc-header" style="font-size:4px;">SFC</span>
+                                <span class="sfc-body"></span>
+                            </span>
+                        </span>
+                        Status do Draft
+                    </span>
+                    <span id="draft-step-indicator" class="text-xs text-zinc-300 font-bold">
+                        Passo 1/11: Escolha um futebolista no painel lateral para destacar posições no campo.
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                    <button onclick="showStartScreen()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold rounded-xl text-xs transition border border-zinc-700 flex items-center gap-1">
+                        <span>⚙️ Mudar Formação</span>
+                    </button>
+                    <button onclick="startNewDraftSession()" class="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-xl text-xs transition border border-amber-300">
+                        🔄 Reiniciar Draft
+                    </button>
+                </div>
+            </div>
+
+            <!-- Side-by-Side Main Draft Workspace -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- SIDE PANEL: Current Drawn Year & Footballer List -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="bg-black text-white rounded-2xl p-5 border-2 border-amber-400 shadow-xl space-y-3 relative overflow-hidden">
+                        <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                            <div class="flex items-center gap-3">
+                                <!-- Crest Badge -->
+                                <div class="sfc-shield-container">
+                                    <div class="sfc-stars">★ ★</div>
+                                    <div class="sfc-shield-md">
+                                        <div class="sfc-header">S.F.C.</div>
+                                        <div class="sfc-body"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-black uppercase text-amber-400 tracking-widest block">Ano Sorteado Atual</span>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <span id="current-year-badge" class="bg-amber-400 text-black font-black px-3 py-0.5 rounded-xl text-3xl shadow">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold text-zinc-400 uppercase block">Rerolls (Max 2)</span>
+                                <span id="reroll-count-text" class="text-lg font-black text-amber-400">2 / 2</span>
+                            </div>
+                        </div>
+
+                        <!-- Reroll Button -->
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <button id="reroll-btn" onclick="useReroll()" class="w-full py-2.5 bg-amber-400 hover:bg-amber-300 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-black font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition active:scale-95 border border-amber-300">
+                                <span id="dice-icon">🎲</span> Re-sortear Ano
+                            </button>
+                        </div>
+                        <p id="reroll-info-msg" class="text-[11px] text-zinc-400 leading-tight italic text-center">
+                            Você pode re-sortear o ano atual até 2 vezes.
+                        </p>
+                    </div>
+
+                    <!-- Available Footballers List Box -->
+                    <div class="bg-white rounded-2xl p-4 border border-zinc-200 shadow-md space-y-3 max-h-[620px] flex flex-col">
+                        <div class="flex items-center justify-between border-b border-zinc-100 pb-2">
+                            <h3 class="font-black text-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                                <span>⚽ Esquadrão Completo de</span>
+                                <span id="side-panel-year-label" class="text-amber-600">--</span>
+                            </h3>
+                            <span id="selectable-count-badge" class="text-[10px] bg-zinc-100 font-bold px-2 py-0.5 rounded text-zinc-600">11 disponíveis</span>
+                        </div>
+
+                        <!-- Active Selected Player Banner -->
+                        <div id="selected-player-banner" class="hidden bg-amber-50 border-2 border-amber-400 p-3 rounded-xl space-y-1">
+                            <span class="text-[10px] uppercase font-black text-amber-800 block">Atleta Selecionado:</span>
+                            <div class="flex items-center justify-between">
+                                <span id="selected-player-name" class="font-black text-sm text-black">--</span>
+                                <span id="selected-player-overall" class="text-lg font-black text-amber-600">--</span>
+                            </div>
+                            <p id="selected-player-pos-hint" class="text-[11px] text-amber-900 font-bold">
+                                👉 Posições permitidas: <span id="allowed-positions-list" class="underline text-black">--</span>
+                            </p>
+                        </div>
+
+                        <!-- Scrollable Cards List -->
+                        <div id="side-footballers-list" class="space-y-2 overflow-y-auto flex-grow pr-1">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TACTICAL PITCH & SQUAD METRICS PANEL -->
+                <div class="lg:col-span-8 space-y-5">
+                    <div class="bg-black rounded-2xl p-4 text-white shadow-xl border border-zinc-800 flex flex-col justify-between">
+                        <div class="flex flex-wrap items-center justify-between mb-3 border-b border-zinc-800 pb-2.5 gap-2">
+                            <div>
+                                <span class="text-[10px] uppercase tracking-wider text-zinc-400 font-black">Esquema Tático Escolhido</span>
+                                <select id="formation-select" onchange="changeFormation()" class="bg-zinc-900 text-amber-400 border border-zinc-700 rounded-lg px-2.5 py-1 text-xs font-black focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                    <option value="4-4-2" selected>4-4-2 Cadenciado (Volantes + 2 Meias Armadores)</option>
+                                    <option value="4-3-3">4-3-3 Tradicional (Volante Recuado + 2 Pontas)</option>
+                                    <option value="4-2-3-1">4-2-3-1 Equilibrado (Duplo Volante + Trinca Ofensiva)</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="clearSquad()" class="text-xs text-red-400 hover:text-red-300 font-bold px-3 py-1 rounded bg-zinc-900 border border-zinc-800 transition">
+                                    Limpar Escalados
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Pitch Canvas -->
+                        <div class="pitch-bg rounded-xl border-2 border-emerald-600/50 p-3 min-h-[530px] flex flex-col justify-between relative shadow-inner">
+                            <div class="absolute inset-x-0 top-0 h-16 border-b-2 border-white/20 pointer-events-none"></div>
+                            <div class="absolute inset-x-0 bottom-0 h-16 border-t-2 border-white/20 pointer-events-none"></div>
+                            <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-white/20 pointer-events-none"></div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 border-2 border-white/20 rounded-full pointer-events-none"></div>
+
+                            <!-- SANTOS FC WATERMARK CREST IN PITCH CENTER -->
+                            <div class="sfc-shield-pitch">
+                                <div class="sfc-header">S.F.C.</div>
+                                <div class="sfc-body"></div>
+                            </div>
+
+                            <div id="pitch-slots-container" class="relative z-10 h-full flex flex-col justify-between py-2 gap-3">
+                                <!-- Dynamic slots (attack, offMid, defMid, defense, gol) -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Card & Simulation Triggers -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                        <div class="md:col-span-7 bg-white rounded-2xl p-4 border border-zinc-200 shadow-md space-y-3">
+                            <h3 class="text-xs font-black text-black border-b border-zinc-100 pb-2 flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="sfc-shield-container">
+                                        <span class="sfc-shield-sm">
+                                            <span class="sfc-header">SFC</span>
+                                            <span class="sfc-body"></span>
+                                        </span>
+                                    </span>
+                                    Métricas do XI Escalado
+                                </span>
+                                <span id="squad-complete-badge" class="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded font-bold">Incompleto (0/11)</span>
+                            </h3>
+
+                            <div class="grid grid-cols-4 gap-2 text-center bg-black text-white rounded-xl p-3 border border-amber-400/40 shadow">
+                                <div class="border-r border-zinc-800">
+                                    <span class="block text-[9px] uppercase font-bold text-zinc-400">Geral</span>
+                                    <span id="team-overall-val" class="text-xl font-black text-amber-400">--</span>
+                                </div>
+                                <div class="border-r border-zinc-800">
+                                    <span class="block text-[9px] uppercase font-bold text-zinc-400">Defesa</span>
+                                    <span id="team-def-val" class="text-lg font-bold text-blue-400">--</span>
+                                </div>
+                                <div class="border-r border-zinc-800">
+                                    <span class="block text-[9px] uppercase font-bold text-zinc-400">Meio</span>
+                                    <span id="team-mei-val" class="text-lg font-bold text-emerald-400">--</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] uppercase font-bold text-zinc-400">Ataque</span>
+                                    <span id="team-ata-val" class="text-lg font-bold text-rose-400">--</span>
+                                </div>
+                            </div>
+
+                            <!-- Dual Simulation Buttons -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <button id="run-sim-animated-btn" onclick="startLeagueSimulation(true)" disabled class="py-3 bg-amber-400 hover:bg-amber-300 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-black font-black rounded-xl shadow transition text-xs uppercase tracking-wider border border-amber-300 flex items-center justify-center gap-1">
+                                    <span>▶️ Simular Rodada a Rodada</span>
+                                </button>
+                                <button id="run-sim-fast-btn" onclick="startLeagueSimulation(false)" disabled class="py-3 bg-black hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed text-amber-400 font-black rounded-xl shadow transition text-xs uppercase tracking-wider border border-amber-400 flex items-center justify-center gap-1">
+                                    <span>⚡ Tabela Final Direta</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Match Feed Box -->
+                        <div id="sim-live-box" class="hidden md:col-span-5 bg-white rounded-2xl p-4 border-2 border-amber-400 shadow-xl space-y-3">
+                            <div class="flex items-center justify-between border-b border-zinc-100 pb-1.5">
+                                <h4 class="text-xs font-black text-black flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span>Liga dos Históricos</span>
+                                </h4>
+                                <span id="round-ticker-badge" class="px-2 py-0.5 bg-amber-400 text-black rounded text-[10px] font-black">Rodada 0/38</span>
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            <div class="w-full bg-zinc-200 h-2 rounded-full overflow-hidden">
+                                <div id="sim-progress-bar" class="bg-amber-400 h-full w-0 transition-all duration-200"></div>
+                            </div>
+
+                            <!-- Santos FC Current Position Spotlight -->
+                            <div class="bg-black text-white p-2.5 rounded-xl border border-amber-400 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="sfc-shield-container">
+                                        <div class="sfc-shield-sm">
+                                            <div class="sfc-header">SFC</div>
+                                            <div class="sfc-body"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] uppercase text-amber-400 font-bold block">Posição Atual do Seu Santos</span>
+                                        <span id="live-santos-rank" class="text-lg font-black text-amber-400">--º Lugar</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] uppercase text-zinc-400 font-bold block">Pontos / Saldo</span>
+                                    <span id="live-santos-stats" class="text-xs font-black text-white">0 Pts | +0 SG</span>
+                                </div>
+                            </div>
+
+                            <p id="sim-live-feed" class="text-[11px] text-zinc-700 leading-tight bg-zinc-50 p-2 rounded-lg border border-zinc-200 h-16 overflow-y-auto">
+                                Clique em "Simular Rodada a Rodada" ou "Tabela Final Direta" para iniciar a disputa!
+                            </p>
+
+                            <button onclick="switchTab('table')" class="w-full py-2 bg-zinc-900 hover:bg-black text-amber-400 font-black rounded-lg text-xs transition border border-zinc-700 flex items-center justify-center gap-1.5">
+                                🏆 Abrir Tabela Completa (20 Times)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB: TABELA DA LIGA HISTÓRICA ================= -->
+        <section id="section-table" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm flex flex-col md:flex-row items-md-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="sfc-shield-container">
+                        <div class="sfc-stars">★ ★</div>
+                        <div class="sfc-shield-md">
+                            <div class="sfc-header">S.F.C.</div>
+                            <div class="sfc-body"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-black mb-0.5 flex items-center gap-2">
+                            Tabela de Classificação da Liga dos Esquadrões Históricos
+                        </h2>
+                        <p class="text-sm text-zinc-600">
+                            Classificação em tempo real comparando seu XI Santos FC aos maiores times da história do futebol brasileiro.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="switchTab('builder')" class="px-4 py-2 bg-amber-400 text-black font-black rounded-xl text-xs shadow hover:bg-amber-300 transition">
+                        ⚡ Voltar ao Draft / Simular
+                    </button>
+                </div>
+            </div>
+
+            <!-- Standings Table Container -->
+            <div class="bg-white rounded-2xl border border-zinc-200 shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-black text-white uppercase text-[10px] tracking-wider border-b-2 border-amber-400">
+                            <tr>
+                                <th class="py-3 px-3 text-center">Pos</th>
+                                <th class="py-3 px-4">Esquadrão Histórico</th>
+                                <th class="py-3 px-2 text-center">P</th>
+                                <th class="py-3 px-2 text-center">J</th>
+                                <th class="py-3 px-2 text-center">V</th>
+                                <th class="py-3 px-2 text-center">E</th>
+                                <th class="py-3 px-2 text-center">D</th>
+                                <th class="py-3 px-2 text-center">GP</th>
+                                <th class="py-3 px-2 text-center">GC</th>
+                                <th class="py-3 px-2 text-center">SG</th>
+                                <th class="py-3 px-3 text-center">Aproveitamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-table-body" class="divide-y divide-zinc-200 font-medium">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB: BANCO DE CARTAS ================= -->
+        <section id="section-cards" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="sfc-shield-container">
+                        <div class="sfc-stars">★ ★</div>
+                        <div class="sfc-shield-md">
+                            <div class="sfc-header">S.F.C.</div>
+                            <div class="sfc-body"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-black mb-0.5">
+                            Acervo de Atletas por Temporada (1912-2025)
+                        </h2>
+                        <p class="text-sm text-zinc-600">
+                            Explore todos os cartões sazonais com o selo oficial alvinegro.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Filters Bar -->
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-zinc-50 p-3.5 rounded-xl border border-zinc-200">
+                    <div>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase mb-1">Buscar por Nome</label>
+                        <input type="text" id="search-input" oninput="renderCards()" placeholder="Ex: Pelé, Neymar, Zito..." class="w-full bg-white border border-zinc-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase mb-1">Ano / Era Histórica</label>
+                        <select id="era-filter" onchange="renderCards()" class="w-full bg-white border border-zinc-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                            <option value="ALL">Todas as Eras (1912 - 2025)</option>
+                            <option value="1912-1955">1912-1955: Amadorismo & Pioneiros</option>
+                            <option value="1956-1974">1956-1974: Era Pelé & Domínio Global</option>
+                            <option value="1975-1994">1975-1994: 1ª Gen Meninos da Vila</option>
+                            <option value="1995-2001">1995-2001: Era Conmebol & Giovanni</option>
+                            <option value="2002-2008">2002-2008: 2ª Gen Meninos da Vila</option>
+                            <option value="2009-2014">2009-2014: 3ª Gen Meninos & Tri América</option>
+                            <option value="2015-2025">2015-2025: Era Contemporânea</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase mb-1">Posição Nativa</label>
+                        <select id="pos-filter" onchange="renderCards()" class="w-full bg-white border border-zinc-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                            <option value="ALL">Todas as Posições</option>
+                            <option value="GOL">Goleiros (GOL)</option>
+                            <option value="ZAG">Zagueiros (ZAG)</option>
+                            <option value="LD">Laterais (LD/LE)</option>
+                            <option value="VOL">Volantes (VOL)</option>
+                            <option value="MEI">Meio-Campistas (MC/MEI)</option>
+                            <option value="ATA">Atacantes / Pontas (PE/PD/SA/ATA)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-zinc-500 uppercase mb-1">Ordenação</label>
+                        <select id="sort-filter" onchange="renderCards()" class="w-full bg-white border border-zinc-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                            <option value="geral-desc">Maior Overall Geral</option>
+                            <option value="geral-asc">Menor Overall Geral</option>
+                            <option value="ano-asc">Ano (Mais Antigo)</option>
+                            <option value="ano-desc">Ano (Mais Recente)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between text-xs text-zinc-500 border-t border-zinc-100 pt-2.5">
+                    <span id="card-count-label" class="font-bold text-black">Mostrando 0 cartões</span>
+                </div>
+            </div>
+
+            <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- ================= TAB: ANÁLISE DE ERAS ================= -->
+        <section id="section-analytics" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm flex items-center gap-3">
+                <div class="sfc-shield-container">
+                    <div class="sfc-stars">★ ★</div>
+                    <div class="sfc-shield-md">
+                        <div class="sfc-header">S.F.C.</div>
+                        <div class="sfc-body"></div>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-black mb-0.5">
+                        Inteligência Histórica e Comparativo de Eras
+                    </h2>
+                    <p class="text-sm text-zinc-600">
+                        Análise estatística comparativa das métricas setoriais das grandes gerações do Santos FC.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-black mb-1">Média de Atributos por Era Histórica</h3>
+                        <p class="text-xs text-zinc-500 mb-4">Radar comparativo entre os grandes momentos alvinegros.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-eras-radar"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-black mb-1">Top 10 Cartões Individuais Sazonais</h3>
+                        <p class="text-xs text-zinc-500 mb-4">Os maiores overalls de atletas em um único ano.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-top-players"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-zinc-400 border-t border-zinc-800 py-6 text-center text-xs mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center space-y-2">
+            <div class="sfc-shield-container">
+                <div class="sfc-stars text-amber-400">★ ★</div>
+                <div class="sfc-shield-sm">
+                    <div class="sfc-header">SFC</div>
+                    <div class="sfc-body"></div>
+                </div>
+            </div>
+            <p class="font-bold text-white">Santos Futebol Clube — Draft 38-0 & Liga dos Históricos (1912–2025)</p>
+            <p class="text-zinc-500">Desenvolvido com identidade Alvinegra Praiana para simulação tática e preservação histórica.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* ================= EXPANDED 28 COMPLETE HISTORIC SQUAD YEARS ================= */
+        const PLAYERS_DB = [
+            // --- 1958: Campeões Paulistas (143 Gols) ---
+            { id: '1958-laercio', name: 'Laércio', year: 1958, pos: 'GOL', secPos: [], geral: 83, def: 85, mei: 40, ata: 30, era: '1956-1974', desc: 'Goleiro titular do Paulistão de 58.' },
+            { id: '1958-dalmo', name: 'Dalmo', year: 1958, pos: 'LE', secPos: ['ZAG'], geral: 84, def: 85, mei: 76, ata: 65, era: '1956-1974', desc: 'Lateral defensivo.' },
+            { id: '1958-mauro', name: 'Mauro Ramos', year: 1958, pos: 'ZAG', secPos: [], geral: 88, def: 90, mei: 68, ata: 40, era: '1956-1974', desc: 'Elegância defensiva.' },
+            { id: '1958-formiga', name: 'Formiga', year: 1958, pos: 'ZAG', secPos: ['VOL'], geral: 85, def: 86, mei: 78, ata: 55, era: '1956-1974', desc: 'Zagueiro viril da retaguarda.' },
+            { id: '1958-getulio', name: 'Getúlio', year: 1958, pos: 'LD', secPos: ['ZAG'], geral: 83, def: 84, mei: 75, ata: 68, era: '1956-1974', desc: 'Lateral firme na marcação.' },
+            { id: '1958-zito', name: 'Zito', year: 1958, pos: 'VOL', secPos: ['MC'], geral: 88, def: 87, mei: 88, ata: 72, era: '1956-1974', desc: 'Líder do meio-campo.' },
+            { id: '1958-jair', name: 'Jair Rosa Pinto', year: 1958, pos: 'MC', secPos: ['MEI'], geral: 88, def: 58, mei: 90, ata: 84, era: '1956-1974', desc: 'Lançamentos cirúrgicos.' },
+            { id: '1958-fioti', name: 'Fioti', year: 1958, pos: 'MEI', secPos: ['MC'], geral: 82, def: 55, mei: 83, ata: 78, era: '1956-1974', desc: 'Armador de bom passe.' },
+            { id: '1958-pepe', name: 'Pepe', year: 1958, pos: 'PE', secPos: ['MEI'], geral: 88, def: 50, mei: 78, ata: 90, era: '1956-1974', desc: 'Canhão de esquerda.' },
+            { id: '1958-pagao', name: 'Pagão', year: 1958, pos: 'ATA', secPos: ['SA'], geral: 86, def: 42, mei: 72, ata: 89, era: '1956-1974', desc: 'Toques refinados.' },
+            { id: '1958-pele', name: 'Pelé', year: 1958, pos: 'SA', secPos: ['ATA', 'MEI', 'PE'], geral: 94, def: 55, mei: 90, ata: 96, era: '1956-1974', desc: '58 gols no Paulistão aos 17 anos.' },
+            { id: '1958-dorval', name: 'Dorval', year: 1958, pos: 'PD', secPos: ['MEI'], geral: 85, def: 50, mei: 78, ata: 87, era: '1956-1974', desc: 'Ponta veloz.' },
+
+            // --- 1962: Bicampeão Mundial ---
+            { id: '1962-gylmar', name: 'Gylmar dos Santos Neves', year: 1962, pos: 'GOL', secPos: [], geral: 91, def: 93, mei: 45, ata: 30, era: '1956-1974', desc: 'Goleiro bicampeão mundial.' },
+            { id: '1962-dalmo', name: 'Dalmo', year: 1962, pos: 'LE', secPos: ['ZAG'], geral: 86, def: 87, mei: 75, ata: 66, era: '1956-1974', desc: 'Titular na lateral.' },
+            { id: '1962-mauro', name: 'Mauro Ramos', year: 1962, pos: 'ZAG', secPos: [], geral: 91, def: 93, mei: 70, ata: 45, era: '1956-1974', desc: 'Capitão lendário.' },
+            { id: '1962-calvet', name: 'Calvet', year: 1962, pos: 'ZAG', secPos: ['VOL'], geral: 88, def: 90, mei: 75, ata: 40, era: '1956-1974', desc: 'Quarta-trava da zaga.' },
+            { id: '1962-lima', name: 'Lima', year: 1962, pos: 'LD', secPos: ['LE', 'VOL', 'MC'], geral: 89, def: 88, mei: 88, ata: 78, era: '1956-1974', desc: 'O Coringa da Vila.' },
+            { id: '1962-zito', name: 'Zito', year: 1962, pos: 'VOL', secPos: ['MC'], geral: 92, def: 90, mei: 93, ata: 75, era: '1956-1974', desc: 'O Gerente da Vila.' },
+            { id: '1962-mengalvio', name: 'Mengálvio', year: 1962, pos: 'MC', secPos: ['MEI'], geral: 88, def: 72, mei: 90, ata: 82, era: '1956-1974', desc: 'Passe preciso.' },
+            { id: '1962-pepe', name: 'Pepe', year: 1962, pos: 'PE', secPos: ['MEI'], geral: 92, def: 50, mei: 80, ata: 95, era: '1956-1974', desc: 'O Canhão da Vila.' },
+            { id: '1962-coutinho', name: 'Coutinho', year: 1962, pos: 'ATA', secPos: ['SA'], geral: 93, def: 45, mei: 78, ata: 96, era: '1956-1974', desc: 'Gênio da área.' },
+            { id: '1962-pele', name: 'Pelé', year: 1962, pos: 'SA', secPos: ['ATA', 'MEI', 'PE'], geral: 99, def: 60, mei: 97, ata: 99, era: '1956-1974', desc: 'O Rei do Futebol.' },
+            { id: '1962-dorval', name: 'Dorval', year: 1962, pos: 'PD', secPos: ['MEI'], geral: 88, def: 55, mei: 80, ata: 90, era: '1956-1974', desc: 'Ponta imparável.' },
+
+            // --- 1963: Bicampeão Mundial (vs Milan) ---
+            { id: '1963-gylmar', name: 'Gylmar dos Santos Neves', year: 1963, pos: 'GOL', secPos: [], geral: 91, def: 93, mei: 45, ata: 30, era: '1956-1974', desc: 'Segurança absoluta sob a trave.' },
+            { id: '1963-geraldino', name: 'Geraldino', year: 1963, pos: 'LE', secPos: [], geral: 85, def: 86, mei: 74, ata: 65, era: '1956-1974', desc: 'Titular no jogo decisivo contra o Milan.' },
+            { id: '1963-mauro', name: 'Mauro Ramos', year: 1963, pos: 'ZAG', secPos: [], geral: 91, def: 93, mei: 70, ata: 45, era: '1956-1974', desc: 'Xerife bicampeão mundial.' },
+            { id: '1963-haroldo', name: 'Haroldo', year: 1963, pos: 'ZAG', secPos: [], geral: 86, def: 88, mei: 60, ata: 40, era: '1956-1974', desc: 'Substituto perfeito na zaga.' },
+            { id: '1963-lima', name: 'Lima', year: 1963, pos: 'LD', secPos: ['LE', 'VOL'], geral: 89, def: 88, mei: 88, ata: 77, era: '1956-1974', desc: 'Polivalência no Maracanã.' },
+            { id: '1963-zito', name: 'Zito', year: 1963, pos: 'VOL', secPos: ['MC'], geral: 92, def: 90, mei: 93, ata: 75, era: '1956-1974', desc: 'Voz de comando.' },
+            { id: '1963-mengalvio', name: 'Mengálvio', year: 1963, pos: 'MC', secPos: ['MEI'], geral: 88, def: 72, mei: 90, ata: 82, era: '1956-1974', desc: 'Qualidade no passe longo.' },
+            { id: '1963-almir', name: 'Almir Pernambuquinho', year: 1963, pos: 'MEI', secPos: ['SA', 'ATA'], geral: 88, def: 52, mei: 86, ata: 90, era: '1956-1974', desc: 'Herói imortal contra o Milan.' },
+            { id: '1963-pepe', name: 'Pepe', year: 1963, pos: 'PE', secPos: ['MEI'], geral: 92, def: 50, mei: 80, ata: 95, era: '1956-1974', desc: 'Gols de falta memoráveis.' },
+            { id: '1963-coutinho', name: 'Coutinho', year: 1963, pos: 'ATA', secPos: ['SA'], geral: 92, def: 45, mei: 78, ata: 95, era: '1956-1974', desc: 'Tabelas mágicas.' },
+            { id: '1963-dorval', name: 'Dorval', year: 1963, pos: 'PD', secPos: [], geral: 88, def: 55, mei: 80, ata: 90, era: '1956-1974', desc: 'Ponta de velocidade pura.' },
+
+            // --- 1965: Pentacampeões Brasileiros (Taça Brasil) ---
+            { id: '1965-gylmar', name: 'Gylmar dos Santos Neves', year: 1965, pos: 'GOL', secPos: [], geral: 91, def: 93, mei: 45, ata: 30, era: '1956-1974', desc: 'Goleiro penta da Taça Brasil.' },
+            { id: '1965-geraldino', name: 'Geraldino', year: 1965, pos: 'LE', secPos: [], geral: 85, def: 86, mei: 74, ata: 65, era: '1956-1974', desc: 'Solidez na lateral esquerda.' },
+            { id: '1965-mauro', name: 'Mauro Ramos', year: 1965, pos: 'ZAG', secPos: [], geral: 90, def: 92, mei: 68, ata: 45, era: '1956-1974', desc: 'Xerife de técnica refinada.' },
+            { id: '1965-modesto', name: 'Modesto', year: 1965, pos: 'ZAG', secPos: [], geral: 86, def: 88, mei: 58, ata: 40, era: '1956-1974', desc: 'Zagueiro vigoroso.' },
+            { id: '1965-lima', name: 'Lima', year: 1965, pos: 'LD', secPos: ['LE', 'VOL'], geral: 89, def: 88, mei: 88, ata: 77, era: '1956-1974', desc: 'O Coringa da Vila.' },
+            { id: '1965-zito', name: 'Zito', year: 1965, pos: 'VOL', secPos: ['MC'], geral: 91, def: 89, mei: 92, ata: 74, era: '1956-1974', desc: 'Líder incontestável.' },
+            { id: '1965-mengalvio', name: 'Mengálvio', year: 1965, pos: 'MC', secPos: ['MEI'], geral: 88, def: 72, mei: 90, ata: 82, era: '1956-1974', desc: 'Cadência no meio.' },
+            { id: '1965-pepe', name: 'Pepe', year: 1965, pos: 'PE', secPos: ['MEI'], geral: 91, def: 50, mei: 80, ata: 94, era: '1956-1974', desc: 'Bombardeiro pela esquerda.' },
+            { id: '1965-coutinho', name: 'Coutinho', year: 1965, pos: 'ATA', secPos: ['SA'], geral: 92, def: 45, mei: 78, ata: 95, era: '1956-1974', desc: 'Artilheiro da Taça Brasil.' },
+            { id: '1965-pele', name: 'Pelé', year: 1965, pos: 'SA', secPos: ['ATA', 'MEI'], geral: 99, def: 60, mei: 97, ata: 99, era: '1956-1974', desc: 'Temporada espetacular do Rei.' },
+            { id: '1965-dorval', name: 'Dorval', year: 1965, pos: 'PD', secPos: [], geral: 87, def: 55, mei: 80, ata: 89, era: '1956-1974', desc: 'Ataques fulminantes pela ponta.' },
+
+            // --- 1968: Super Santos (Robertão 68) ---
+            { id: '1968-claudio', name: 'Cláudio', year: 1968, pos: 'GOL', secPos: [], geral: 85, def: 87, mei: 40, ata: 30, era: '1956-1974', desc: 'Goleiro do Robertão 68.' },
+            { id: '1968-rildo', name: 'Rildo', year: 1968, pos: 'LE', secPos: ['VOL'], geral: 86, def: 85, mei: 80, ata: 74, era: '1956-1974', desc: 'Fôlego na lateral.' },
+            { id: '1968-ramos-delgado', name: 'Ramos Delgado', year: 1968, pos: 'ZAG', secPos: [], geral: 90, def: 92, mei: 68, ata: 40, era: '1956-1974', desc: 'Zagueiro argentino de classe.' },
+            { id: '1968-joel', name: 'Joel Camargo', year: 1968, pos: 'ZAG', secPos: [], geral: 87, def: 89, mei: 65, ata: 42, era: '1956-1974', desc: 'Elegância defensiva.' },
+            { id: '1968-carlos-alberto', name: 'Carlos Alberto Torres', year: 1968, pos: 'LD', secPos: ['ZAG'], geral: 94, def: 93, mei: 86, ata: 84, era: '1956-1974', desc: 'Capitão do Tri.' },
+            { id: '1968-clodoaldo', name: 'Clodoaldo', year: 1968, pos: 'VOL', secPos: ['MC'], geral: 88, def: 87, mei: 89, ata: 72, era: '1956-1974', desc: 'Jovem revelação mágica.' },
+            { id: '1968-negreiros', name: 'Negreiros', year: 1968, pos: 'MC', secPos: ['MEI'], geral: 83, def: 70, mei: 84, ata: 76, era: '1956-1974', desc: 'Dinamicidade no meio.' },
+            { id: '1968-lima', name: 'Lima', year: 1968, pos: 'MEI', secPos: ['MC', 'PD'], geral: 87, def: 82, mei: 87, ata: 77, era: '1956-1974', desc: 'Multifuncional vitorioso.' },
+            { id: '1968-edu', name: 'Edu', year: 1968, pos: 'PE', secPos: ['MEI'], geral: 90, def: 52, mei: 84, ata: 92, era: '1956-1974', desc: 'Dribles desconcertantes.' },
+            { id: '1968-toninho', name: 'Toninho Guerreiro', year: 1968, pos: 'ATA', secPos: ['SA'], geral: 90, def: 44, mei: 70, ata: 93, era: '1956-1974', desc: 'Artilheiro do Robertão.' },
+            { id: '1968-pele', name: 'Pelé', year: 1968, pos: 'SA', secPos: ['ATA', 'MEI', 'PE'], geral: 98, def: 58, mei: 95, ata: 98, era: '1956-1974', desc: 'Dono do futebol nacional.' },
+            { id: '1968-kaneko', name: 'Kaneko', year: 1968, pos: 'PD', secPos: ['MEI'], geral: 83, def: 48, mei: 76, ata: 84, era: '1956-1974', desc: 'Carretilha histórica.' },
+
+            // --- 1973: Campeões Paulistas (Pelé / Cejas) ---
+            { id: '1973-cejas', name: 'Agustín Cejas', year: 1973, pos: 'GOL', secPos: [], geral: 89, def: 91, mei: 42, ata: 30, era: '1956-1974', desc: 'Goleiro argentino monumental.' },
+            { id: '1973-ze-carlos', name: 'Zé Carlos', year: 1973, pos: 'LE', secPos: ['VOL'], geral: 83, def: 83, mei: 76, ata: 70, era: '1956-1974', desc: 'Apoio seguro na esquerda.' },
+            { id: '1973-carlos-alberto', name: 'Carlos Alberto Torres', year: 1973, pos: 'ZAG', secPos: ['LD'], geral: 92, def: 92, mei: 84, ata: 80, era: '1956-1974', desc: 'Zagueiro e líder clássico.' },
+            { id: '1973-vicente', name: 'Vicente', year: 1973, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 58, ata: 40, era: '1956-1974', desc: 'Firme no combate aéreo.' },
+            { id: '1973-herminio', name: 'Hermínio', year: 1973, pos: 'LD', secPos: ['ZAG'], geral: 83, def: 84, mei: 74, ata: 65, era: '1956-1974', desc: 'Lateral viril e seguro.' },
+            { id: '1973-clodoaldo', name: 'Clodoaldo', year: 1973, pos: 'VOL', secPos: ['MC'], geral: 90, def: 88, mei: 91, ata: 75, era: '1956-1974', desc: 'Classe e visão absoluta.' },
+            { id: '1973-leo-oliveira', name: 'Léo Oliveira', year: 1973, pos: 'MC', secPos: ['MEI'], geral: 84, def: 72, mei: 85, ata: 78, era: '1956-1974', desc: 'Construção rápida no meio.' },
+            { id: '1973-jair-da-costa', name: 'Jair da Costa', year: 1973, pos: 'MEI', secPos: ['PD'], geral: 85, def: 52, mei: 83, ata: 86, era: '1956-1974', desc: 'Veterano ex-Inter de Milão.' },
+            { id: '1973-edu', name: 'Edu', year: 1973, pos: 'PE', secPos: ['MEI'], geral: 88, def: 50, mei: 82, ata: 89, era: '1956-1974', desc: 'Dribles infernais.' },
+            { id: '1973-pele', name: 'Pelé', year: 1973, pos: 'SA', secPos: ['ATA', 'MEI'], geral: 96, def: 55, mei: 93, ata: 96, era: '1956-1974', desc: 'Último título paulista do Rei pelo Peixe.' },
+            { id: '1973-brecha', name: 'Brecha', year: 1973, pos: 'PD', secPos: ['ATA'], geral: 83, def: 45, mei: 75, ata: 84, era: '1956-1974', desc: 'Chute potente.' },
+
+            // --- 1978: 1ª Gen Meninos da Vila ---
+            { id: '1978-vitor', name: 'Vítor', year: 1978, pos: 'GOL', secPos: [], geral: 82, def: 84, mei: 40, ata: 30, era: '1975-1994', desc: 'Goleiro campeão em 78.' },
+            { id: '1978-celio', name: 'Célio', year: 1978, pos: 'LE', secPos: ['VOL'], geral: 81, def: 82, mei: 74, ata: 68, era: '1975-1994', desc: 'Firmeza pelo lado esquerdo.' },
+            { id: '1978-joaozinho', name: 'Joãozinho', year: 1978, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 60, ata: 38, era: '1975-1994', desc: 'Zagueiro da base.' },
+            { id: '1978-neto', name: 'Neto', year: 1978, pos: 'ZAG', secPos: [], geral: 82, def: 84, mei: 58, ata: 35, era: '1975-1994', desc: 'Segurança na defesa.' },
+            { id: '1978-nelson', name: 'Nélson Nascimento', year: 1978, pos: 'LD', secPos: ['ZAG'], geral: 82, def: 83, mei: 72, ata: 65, era: '1975-1994', desc: 'Marcação viril.' },
+            { id: '1978-ze-carlos', name: 'Zé Carlos', year: 1978, pos: 'VOL', secPos: ['MC'], geral: 83, def: 84, mei: 82, ata: 65, era: '1975-1994', desc: 'Pegada forte no meio.' },
+            { id: '1978-ailton-lira', name: 'Aílton Lira', year: 1978, pos: 'MC', secPos: ['MEI'], geral: 84, def: 55, mei: 86, ata: 81, era: '1975-1994', desc: 'Faltas perfeitas.' },
+            { id: '1978-pita', name: 'Pita', year: 1978, pos: 'MEI', secPos: ['MC'], geral: 86, def: 58, mei: 89, ata: 82, era: '1975-1994', desc: 'Maestro refinado.' },
+            { id: '1978-joao-paulo', name: 'João Paulo', year: 1978, pos: 'PE', secPos: ['MEI'], geral: 85, def: 50, mei: 78, ata: 87, era: '1975-1994', desc: 'Ponta arisco.' },
+            { id: '1978-juary', name: 'Juary', year: 1978, pos: 'ATA', secPos: ['SA'], geral: 86, def: 40, mei: 68, ata: 90, era: '1975-1994', desc: 'Artilheiro veloz.' },
+            { id: '1978-nilton-batata', name: 'Nilton Batata', year: 1978, pos: 'PD', secPos: ['MEI'], geral: 84, def: 48, mei: 78, ata: 85, era: '1975-1994', desc: 'Ponta agudíssimo.' },
+
+            // --- 1979: Campeões Paulistas 1978/79 ---
+            { id: '1979-vitor', name: 'Vítor', year: 1979, pos: 'GOL', secPos: [], geral: 83, def: 85, mei: 40, ata: 30, era: '1975-1994', desc: 'Goleiro bicampeão paulista.' },
+            { id: '1979-celio', name: 'Célio', year: 1979, pos: 'LE', secPos: ['VOL'], geral: 82, def: 82, mei: 74, ata: 68, era: '1975-1994', desc: 'Lateral defensivo.' },
+            { id: '1979-joaozinho', name: 'Joãozinho', year: 1979, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 60, ata: 38, era: '1975-1994', desc: 'Muralha da 1ª Geração.' },
+            { id: '1979-neto', name: 'Neto', year: 1979, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 58, ata: 35, era: '1975-1994', desc: 'Compositor da zaga.' },
+            { id: '1979-nelson', name: 'Nélson Nascimento', year: 1979, pos: 'LD', secPos: ['ZAG'], geral: 82, def: 83, mei: 72, ata: 65, era: '1975-1994', desc: 'Marcação implacável.' },
+            { id: '1979-ze-carlos', name: 'Zé Carlos', year: 1979, pos: 'VOL', secPos: ['MC'], geral: 84, def: 85, mei: 83, ata: 65, era: '1975-1994', desc: 'Proteção à zaga.' },
+            { id: '1979-ailton-lira', name: 'Aílton Lira', year: 1979, pos: 'MC', secPos: ['MEI'], geral: 85, def: 55, mei: 87, ata: 82, era: '1975-1994', desc: 'Especialista em bolas paradas.' },
+            { id: '1979-pita', name: 'Pita', year: 1979, pos: 'MEI', secPos: ['MC'], geral: 87, def: 58, mei: 90, ata: 83, era: '1975-1994', desc: 'Camisa 10 clássico.' },
+            { id: '1979-joao-paulo', name: 'João Paulo', year: 1979, pos: 'PE', secPos: ['MEI'], geral: 86, def: 50, mei: 78, ata: 88, era: '1975-1994', desc: 'Velocidade e pontaria.' },
+            { id: '1979-juary', name: 'Juary', year: 1979, pos: 'ATA', secPos: ['SA'], geral: 87, def: 40, mei: 68, ata: 91, era: '1975-1994', desc: 'Comemoração na bandeirinha.' },
+            { id: '1979-nilton-batata', name: 'Nilton Batata', year: 1979, pos: 'PD', secPos: ['MEI'], geral: 85, def: 48, mei: 78, ata: 86, era: '1975-1994', desc: 'Dribles e cruzamentos.' },
+
+            // --- 1984: Vice-Campeões Brasileiros (Serginho Chulapa) ---
+            { id: '1984-rodolfo', name: 'Rodolfo Rodríguez', year: 1984, pos: 'GOL', secPos: [], geral: 91, def: 93, mei: 42, ata: 30, era: '1975-1994', desc: 'Defesas impossíveis de nuca e chão.' },
+            { id: '1984-paulo-robson', name: 'Paulo Róbson', year: 1984, pos: 'LE', secPos: [], geral: 82, def: 82, mei: 76, ata: 70, era: '1975-1994', desc: 'Marcação firme.' },
+            { id: '1984-marcio-rossini', name: 'Márcio Rossini', year: 1984, pos: 'ZAG', secPos: [], geral: 86, def: 88, mei: 55, ata: 45, era: '1975-1994', desc: 'Zagueiro da Seleção Brasileira.' },
+            { id: '1984-toninho-carlos', name: 'Toninho Carlos', year: 1984, pos: 'ZAG', secPos: [], geral: 85, def: 87, mei: 55, ata: 42, era: '1975-1994', desc: 'Parceiro ideal na zaga.' },
+            { id: '1984-paulo-roberto', name: 'Paulo Roberto', year: 1984, pos: 'LD', secPos: [], geral: 83, def: 82, mei: 78, ata: 74, era: '1975-1994', desc: 'Lateral de garra.' },
+            { id: '1984-dema', name: 'Dema', year: 1984, pos: 'VOL', secPos: ['MC'], geral: 83, def: 84, mei: 80, ata: 60, era: '1975-1994', desc: 'Proteção à zaga.' },
+            { id: '1984-lino', name: 'Lino', year: 1984, pos: 'MC', secPos: ['VOL'], geral: 83, def: 78, mei: 82, ata: 72, era: '1975-1994', desc: 'Combate e transição.' },
+            { id: '1984-pita', name: 'Pita', year: 1984, pos: 'MEI', secPos: ['MC'], geral: 88, def: 58, mei: 91, ata: 84, era: '1984-1994', desc: 'Lançador de precisão milimétrica.' },
+            { id: '1984-ze-sergio', name: 'Zé Sérgio', year: 1984, pos: 'PE', secPos: ['MEI'], geral: 86, def: 48, mei: 80, ata: 87, era: '1975-1994', desc: 'Dribles desconcertantes.' },
+            { id: '1984-serginho', name: 'Serginho Chulapa', year: 1984, pos: 'ATA', secPos: [], geral: 89, def: 42, mei: 66, ata: 93, era: '1975-1994', desc: 'Artilheiro matador do Brasileirão.' },
+            { id: '1984-humberto', name: 'Humberto', year: 1984, pos: 'PD', secPos: ['MEI'], geral: 83, def: 48, mei: 76, ata: 84, era: '1975-1994', desc: 'Ponta de drible fácil.' },
+
+            // --- 1995: O Orgulho da Vila / Giovanni ---
+            { id: '1995-edinho', name: 'Edinho', year: 1995, pos: 'GOL', secPos: [], geral: 82, def: 84, mei: 40, ata: 30, era: '1995-2001', desc: 'Goleiro vice-campeão de 95.' },
+            { id: '1995-marcos-adriano', name: 'Marcos Adriano', year: 1995, pos: 'LE', secPos: ['MEI'], geral: 82, def: 81, mei: 77, ata: 72, era: '1995-2001', desc: 'Cruzamentos precisos.' },
+            { id: '1995-narciso', name: 'Narciso', year: 1995, pos: 'ZAG', secPos: ['VOL'], geral: 84, def: 86, mei: 80, ata: 50, era: '1995-2001', desc: 'Zagueiro de ótimo passe.' },
+            { id: '1995-ronaldo', name: 'Ronaldo Marconato', year: 1995, pos: 'ZAG', secPos: [], geral: 81, def: 83, mei: 58, ata: 38, era: '1995-2001', desc: 'Força aérea na zaga.' },
+            { id: '1995-marquinhos', name: 'Marquinhos Capixaba', year: 1995, pos: 'LD', secPos: ['PD'], geral: 82, def: 80, mei: 78, ata: 74, era: '1995-2001', desc: 'Apoio firme na direita.' },
+            { id: '1995-gallo', name: 'Gallo', year: 1995, pos: 'VOL', secPos: ['MC'], geral: 83, def: 85, mei: 80, ata: 62, era: '1995-2001', desc: 'Capitão marcador.' },
+            { id: '1995-carlinhos', name: 'Carlinhos', year: 1995, pos: 'MC', secPos: ['VOL'], geral: 82, def: 80, mei: 82, ata: 70, era: '1995-2001', desc: 'Equilíbrio no meio.' },
+            { id: '1995-giovanni', name: 'Giovanni', year: 1995, pos: 'MEI', secPos: ['SA', 'ATA'], geral: 93, def: 55, mei: 94, ata: 93, era: '1995-2001', desc: 'O Messias da Vila.' },
+            { id: '1995-marcelo-passos', name: 'Marcelo Passos', year: 1995, pos: 'PE', secPos: ['MEI'], geral: 83, def: 48, mei: 80, ata: 84, era: '1995-2001', desc: 'Canhota refinada.' },
+            { id: '1995-jamelli', name: 'Jamelli', year: 1995, pos: 'ATA', secPos: ['SA'], geral: 85, def: 48, mei: 82, ata: 87, era: '1995-2001', desc: 'Parceiro de Giovanni.' },
+            { id: '1995-camanducaia', name: 'Camanducaia', year: 1995, pos: 'PD', secPos: ['SA'], geral: 82, def: 45, mei: 75, ata: 83, era: '1995-2001', desc: 'Velocidade nas pontas.' },
+
+            // --- 1997: Campeões Torneio Rio-São Paulo ---
+            { id: '1997-zetti', name: 'Zetti', year: 1997, pos: 'GOL', secPos: [], geral: 87, def: 89, mei: 42, ata: 30, era: '1995-2001', desc: 'Paredão no título do Rio-SP.' },
+            { id: '1997-marcos-adriano', name: 'Marcos Adriano', year: 1997, pos: 'LE', secPos: ['MEI'], geral: 82, def: 81, mei: 77, ata: 72, era: '1995-2001', desc: 'Marcação e cruzamentos.' },
+            { id: '1997-ronaldao', name: 'Ronaldão', year: 1997, pos: 'ZAG', secPos: [], geral: 86, def: 88, mei: 50, ata: 40, era: '1995-2001', desc: 'Xerife campeão mundial.' },
+            { id: '1997-narciso', name: 'Narciso', year: 1997, pos: 'ZAG', secPos: ['VOL'], geral: 85, def: 87, mei: 81, ata: 52, era: '1995-2001', desc: 'Excelente saída de bola.' },
+            { id: '1997-baiano', name: 'Baiano', year: 1997, pos: 'LD', secPos: ['VOL'], geral: 82, def: 80, mei: 80, ata: 76, era: '1995-2001', desc: 'Força na lateral direita.' },
+            { id: '1997-marcos-assuncao', name: 'Marcos Assunção', year: 1997, pos: 'VOL', secPos: ['MC'], geral: 85, def: 81, mei: 86, ata: 82, era: '1995-2001', desc: 'Cobrador de faltas magistral.' },
+            { id: '1997-carlinhos', name: 'Carlinhos', year: 1997, pos: 'MC', secPos: ['VOL'], geral: 82, def: 80, mei: 82, ata: 70, era: '1995-2001', desc: 'Equilíbrio tático.' },
+            { id: '1997-giovanni', name: 'Giovanni', year: 1997, pos: 'MEI', secPos: ['SA'], geral: 91, def: 52, mei: 92, ata: 90, era: '1995-2001', desc: 'Maestro alvinegro.' },
+            { id: '1997-macedo', name: 'Macedo', year: 1997, pos: 'PE', secPos: ['PD'], geral: 83, def: 45, mei: 76, ata: 84, era: '1995-2001', desc: 'Velocidade estonteante.' },
+            { id: '1997-muller', name: 'Müller', year: 1997, pos: 'ATA', secPos: ['SA'], geral: 88, def: 45, mei: 82, ata: 90, era: '1995-2001', desc: 'Craque campeão do mundo.' },
+            { id: '1997-caio', name: 'Caio Ribeiro', year: 1997, pos: 'PD', secPos: ['MEI'], geral: 83, def: 48, mei: 78, ata: 84, era: '1995-2001', desc: 'Inteligência e gols no Rio-SP.' },
+
+            // --- 1998: Campeões Copa Conmebol ---
+            { id: '1998-zetti', name: 'Zetti', year: 1998, pos: 'GOL', secPos: [], geral: 87, def: 89, mei: 42, ata: 30, era: '1995-2001', desc: 'Experiência e defesas milagrosas.' },
+            { id: '1998-athirson', name: 'Athirson', year: 1998, pos: 'LE', secPos: ['MEI'], geral: 84, def: 78, mei: 84, ata: 82, era: '1995-2001', desc: 'Arrancadas fulminantes.' },
+            { id: '1998-argel', name: 'Argel Fucks', year: 1998, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 52, ata: 45, era: '1995-2001', desc: 'Zagueiro xerife.' },
+            { id: '1998-narciso', name: 'Narciso', year: 1998, pos: 'ZAG', secPos: ['VOL'], geral: 85, def: 87, mei: 82, ata: 52, era: '1995-2001', desc: 'Capitão vitorioso na Argentina.' },
+            { id: '1998-baiano', name: 'Baiano', year: 1998, pos: 'LD', secPos: ['VOL'], geral: 82, def: 80, mei: 80, ata: 76, era: '1995-2001', desc: 'Poder ofensivo pela direita.' },
+            { id: '1998-marcos-assuncao', name: 'Marcos Assunção', year: 1998, pos: 'VOL', secPos: ['MC'], geral: 86, def: 82, mei: 88, ata: 84, era: '1995-2001', desc: 'Especialista em cobranças de falta.' },
+            { id: '1998-claudiomiro', name: 'Claudiomiro', year: 1998, pos: 'MC', secPos: ['VOL', 'ZAG'], geral: 83, def: 84, mei: 80, ata: 65, era: '1995-2001', desc: 'Autor do gol 10.000 do Peixe.' },
+            { id: '1998-jorginho', name: 'Jorginho Cantinflas', year: 1998, pos: 'MEI', secPos: ['MC'], geral: 84, def: 58, mei: 86, ata: 80, era: '1995-2001', desc: 'Cérebro do meio-campo.' },
+            { id: '1998-alessandro', name: 'Alessandro Cambalhota', year: 1998, pos: 'PE', secPos: ['ATA'], geral: 83, def: 45, mei: 75, ata: 85, era: '1995-2001', desc: 'Gols decisivos e comemorações.' },
+            { id: '1998-viola', name: 'Viola', year: 1998, pos: 'ATA', secPos: ['SA'], geral: 87, def: 40, mei: 68, ata: 90, era: '1995-2001', desc: 'Artilheiro da Copa Conmebol.' },
+            { id: '1998-lucio', name: 'Lúcio', year: 1998, pos: 'PD', secPos: ['MEI'], geral: 82, def: 48, mei: 76, ata: 83, era: '1995-2001', desc: 'Dribles em alta velocidade.' },
+
+            // --- 2002: 2ª Gen Meninos da Vila ---
+            { id: '2002-fabio-costa', name: 'Fábio Costa', year: 2002, pos: 'GOL', secPos: [], geral: 87, def: 89, mei: 40, ata: 30, era: '2002-2008', desc: 'Muralha no Octa Brasileiro.' },
+            { id: '2002-leo', name: 'Léo', year: 2002, pos: 'LE', secPos: ['MEI'], geral: 87, def: 84, mei: 86, ata: 82, era: '2002-2008', desc: 'Técnica e garra na lateral.' },
+            { id: '2002-alex', name: 'Alex', year: 2002, pos: 'ZAG', secPos: [], geral: 87, def: 89, mei: 60, ata: 55, era: '2002-2008', desc: 'O Canhão da Vila.' },
+            { id: '2002-andre-luis', name: 'André Luís', year: 2002, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 55, ata: 40, era: '2002-2008', desc: 'Virilidade defensiva.' },
+            { id: '2002-maurinho', name: 'Maurinho', year: 2002, pos: 'LD', secPos: ['PD'], geral: 83, def: 81, mei: 80, ata: 78, era: '2002-2008', desc: 'Arrancadas pela direita.' },
+            { id: '2002-paulo-almeida', name: 'Paulo Almeida', year: 2002, pos: 'VOL', secPos: [], geral: 84, def: 86, mei: 80, ata: 58, era: '2002-2008', desc: 'Capitão da pegada.' },
+            { id: '2002-renato', name: 'Renato', year: 2002, pos: 'MC', secPos: ['VOL'], geral: 87, def: 83, mei: 89, ata: 74, era: '2002-2008', desc: 'Passe perfeito sem faltas.' },
+            { id: '2002-diego', name: 'Diego Ribas', year: 2002, pos: 'MEI', secPos: ['MC'], geral: 90, def: 58, mei: 92, ata: 88, era: '2002-2008', desc: 'Maestro de 17 anos.' },
+            { id: '2002-robinho', name: 'Robinho', year: 2002, pos: 'PE', secPos: ['SA'], geral: 90, def: 45, mei: 82, ata: 93, era: '2002-2008', desc: 'Pedaladas antológicas.' },
+            { id: '2002-alberto', name: 'Alberto', year: 2002, pos: 'ATA', secPos: ['SA'], geral: 84, def: 40, mei: 65, ata: 86, era: '2002-2008', desc: 'Bicicleta inesquecível.' },
+            { id: '2002-elano', name: 'Elano', year: 2002, pos: 'PD', secPos: ['MC', 'MEI'], geral: 86, def: 76, mei: 88, ata: 82, era: '2002-2008', desc: 'Polivalência e chute forte.' },
+
+            // --- 2003: Vice-Campeões da Libertadores ---
+            { id: '2003-fabio-costa', name: 'Fábio Costa', year: 2003, pos: 'GOL', secPos: [], geral: 88, def: 90, mei: 40, ata: 30, era: '2002-2008', desc: 'Milagres na Libertadores.' },
+            { id: '2003-leo', name: 'Léo', year: 2003, pos: 'LE', secPos: ['MEI'], geral: 88, def: 85, mei: 87, ata: 83, era: '2002-2008', desc: 'Consagrado na lateral.' },
+            { id: '2003-alex', name: 'Alex', year: 2003, pos: 'ZAG', secPos: [], geral: 89, def: 91, mei: 62, ata: 58, era: '2002-2008', desc: 'Canhão e zaga impenetrável.' },
+            { id: '2003-andre-luis', name: 'André Luís', year: 2003, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 55, ata: 40, era: '2002-2008', desc: 'Xerife de combate.' },
+            { id: '2003-reginaldo', name: 'Reginaldo Araújo', year: 2003, pos: 'LD', secPos: [], geral: 82, def: 80, mei: 78, ata: 74, era: '2002-2008', desc: 'Apoio físico.' },
+            { id: '2003-paulo-almeida', name: 'Paulo Almeida', year: 2003, pos: 'VOL', secPos: [], geral: 85, def: 87, mei: 81, ata: 58, era: '2002-2008', desc: 'Capitão raçudo.' },
+            { id: '2003-renato', name: 'Renato', year: 2003, pos: 'MC', secPos: ['VOL'], geral: 88, def: 84, mei: 90, ata: 75, era: '2002-2008', desc: 'Futebol fino e limpo.' },
+            { id: '2003-diego', name: 'Diego Ribas', year: 2003, pos: 'MEI', secPos: ['MC'], geral: 91, def: 58, mei: 93, ata: 89, era: '2002-2008', desc: 'Camisa 10 da América.' },
+            { id: '2003-robinho', name: 'Robinho', year: 2003, pos: 'PE', secPos: ['SA'], geral: 91, def: 45, mei: 83, ata: 94, era: '2002-2008', desc: 'Dribles mágicos na América.' },
+            { id: '2003-ricardo-oliveira', name: 'Ricardo Oliveira', year: 2003, pos: 'ATA', secPos: [], geral: 89, def: 40, mei: 68, ata: 92, era: '2002-2008', desc: 'Artilheiro da Libertadores.' },
+            { id: '2003-elano', name: 'Elano', year: 2003, pos: 'PD', secPos: ['MC'], geral: 87, def: 76, mei: 89, ata: 84, era: '2002-2008', desc: 'Gols decisivos na campanha.' },
+
+            // --- 2004: Bicampeões Brasileiros ---
+            { id: '2004-mauro', name: 'Mauro', year: 2004, pos: 'GOL', secPos: [], geral: 83, def: 85, mei: 40, ata: 30, era: '2002-2008', desc: 'Goleiro no Nona Título.' },
+            { id: '2004-leo', name: 'Léo', year: 2004, pos: 'LE', secPos: ['MEI'], geral: 88, def: 85, mei: 87, ata: 83, era: '2002-2008', desc: 'Lenda da lateral esquerda.' },
+            { id: '2004-avalos', name: 'Ávalos', year: 2004, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 50, ata: 38, era: '2002-2008', desc: 'Zagueiro xerife.' },
+            { id: '2004-domingos', name: 'Domingos', year: 2004, pos: 'ZAG', secPos: [], geral: 82, def: 84, mei: 45, ata: 35, era: '2002-2008', desc: 'Marcação implacável.' },
+            { id: '2004-paulo-cesar', name: 'Paulo César', year: 2004, pos: 'LD', secPos: ['MEI'], geral: 84, def: 82, mei: 83, ata: 77, era: '2002-2008', desc: 'Lateral ofensivo.' },
+            { id: '2004-fabinho', name: 'Fabinho', year: 2004, pos: 'VOL', secPos: ['MC'], geral: 83, def: 84, mei: 81, ata: 65, era: '2002-2008', desc: 'Proteção à zaga.' },
+            { id: '2004-ricardinho', name: 'Ricardinho', year: 2004, pos: 'MC', secPos: ['MEI'], geral: 88, def: 65, mei: 90, ata: 82, era: '2002-2008', desc: 'Cérebro do Nona Título.' },
+            { id: '2004-elano', name: 'Elano', year: 2004, pos: 'MEI', secPos: ['PD', 'MC'], geral: 87, def: 75, mei: 88, ata: 83, era: '2002-2008', desc: 'Artilheiro e garçom.' },
+            { id: '2004-robinho', name: 'Robinho', year: 2004, pos: 'PE', secPos: ['SA'], geral: 92, def: 46, mei: 84, ata: 94, era: '2002-2008', desc: 'Craque do Brasileirão 2004.' },
+            { id: '2004-deivid', name: 'Deivid', year: 2004, pos: 'ATA', secPos: ['SA'], geral: 86, def: 42, mei: 70, ata: 89, era: '2002-2008', desc: 'Artilheiro decisivo.' },
+            { id: '2004-basilio', name: 'Basílio', year: 2004, pos: 'PD', secPos: ['ATA'], geral: 84, def: 45, mei: 75, ata: 86, era: '2002-2008', desc: 'O Imprevisto do título.' },
+
+            // --- 2006: Campeões Paulistas (Vanderlei Luxemburgo) ---
+            { id: '2006-fabio-costa', name: 'Fábio Costa', year: 2006, pos: 'GOL', secPos: [], geral: 86, def: 88, mei: 40, ata: 30, era: '2002-2008', desc: 'Defesas milagrosas no Paulistão 06.' },
+            { id: '2006-kleber', name: 'Kléber', year: 2006, pos: 'LE', secPos: ['MEI'], geral: 86, def: 83, mei: 85, ata: 82, era: '2002-2008', desc: 'Cruzamentos e técnica apurada.' },
+            { id: '2006-luiz-alberto', name: 'Luiz Alberto', year: 2006, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 50, ata: 40, era: '2002-2008', desc: 'Segurança na zaga.' },
+            { id: '2006-maninha', name: 'Ronaldo Guiaro', year: 2006, pos: 'ZAG', secPos: [], geral: 82, def: 84, mei: 48, ata: 38, era: '2002-2008', desc: 'Zagueiro físico.' },
+            { id: '2006-denis', name: 'Denis', year: 2006, pos: 'LD', secPos: [], geral: 81, def: 80, mei: 76, ata: 72, era: '2002-2008', desc: 'Regularidade na lateral.' },
+            { id: '2006-maldonado', name: 'Claudio Maldonado', year: 2006, pos: 'VOL', secPos: ['MC'], geral: 86, def: 87, mei: 85, ata: 65, era: '2002-2008', desc: 'Motor e desarme chileno.' },
+            { id: '2006-heleno', name: 'Heleno', year: 2006, pos: 'MC', secPos: ['VOL'], geral: 82, def: 81, mei: 80, ata: 62, era: '2002-2008', desc: 'Combatividade extrema.' },
+            { id: '2006-cleber-santana', name: 'Cléber Santana', year: 2006, pos: 'MEI', secPos: ['MC'], geral: 85, def: 68, mei: 86, ata: 82, era: '2002-2008', desc: 'Chutes venenosos de fora da área.' },
+            { id: '2006-ze-roberto', name: 'Zé Roberto', year: 2006, pos: 'PE', secPos: ['MEI', 'MC'], geral: 91, def: 78, mei: 93, ata: 88, era: '2002-2008', desc: 'Classe mundial absoluta.' },
+            { id: '2006-reinaldo', name: 'Reinaldo', year: 2006, pos: 'ATA', secPos: ['SA'], geral: 83, def: 40, mei: 70, ata: 85, era: '2002-2008', desc: 'Atacante oportunista.' },
+            { id: '2006-wellington', name: 'Wellington Paulista', year: 2006, pos: 'PD', secPos: ['ATA'], geral: 82, def: 42, mei: 68, ata: 84, era: '2002-2008', desc: 'Gols importantes no estadual.' },
+
+            // --- 2007: Vice-Campeões Brasileiros & Semis Libertadores ---
+            { id: '2007-fabio-costa', name: 'Fábio Costa', year: 2007, pos: 'GOL', secPos: [], geral: 85, def: 87, mei: 40, ata: 30, era: '2002-2008', desc: 'Capitão em 2007.' },
+            { id: '2007-kleber', name: 'Kléber', year: 2007, pos: 'LE', secPos: ['MEI'], geral: 87, def: 84, mei: 86, ata: 83, era: '2002-2008', desc: 'Melhor lateral esquerdo do Brasil.' },
+            { id: '2007-adailton', name: 'Adaílton', year: 2007, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 50, ata: 42, era: '2002-2008', desc: 'Zagueiro viril.' },
+            { id: '2007-domingos', name: 'Domingos', year: 2007, pos: 'ZAG', secPos: [], geral: 82, def: 84, mei: 45, ata: 35, era: '2002-2008', desc: 'Xerife de combate.' },
+            { id: '2007-alessandro', name: 'Alessandro', year: 2007, pos: 'LD', secPos: [], geral: 82, def: 80, mei: 78, ata: 74, era: '2002-2008', desc: 'Velocidade pela lateral.' },
+            { id: '2007-maldonado', name: 'Claudio Maldonado', year: 2007, pos: 'VOL', secPos: ['MC'], geral: 86, def: 87, mei: 84, ata: 65, era: '2002-2008', desc: 'Segurança tática.' },
+            { id: '2007-rodrigo-souto', name: 'Rodrigo Souto', year: 2007, pos: 'MC', secPos: ['VOL'], geral: 85, def: 82, mei: 86, ata: 76, era: '2002-2008', desc: 'Saída de bola refinada.' },
+            { id: '2007-cleber-santana', name: 'Cléber Santana', year: 2007, pos: 'MEI', secPos: ['MC'], geral: 86, def: 68, mei: 87, ata: 84, era: '2002-2008', desc: 'Artilheiro do time na Libertadores.' },
+            { id: '2007-ze-roberto', name: 'Zé Roberto', year: 2007, pos: 'PE', secPos: ['MEI'], geral: 91, def: 78, mei: 93, ata: 88, era: '2002-2008', desc: 'Exibição magistral na América.' },
+            { id: '2007-jonas', name: 'Jonas', year: 2007, pos: 'ATA', secPos: ['SA'], geral: 83, def: 42, mei: 70, ata: 85, era: '2002-2008', desc: 'Início da carreira do artilheiro.' },
+            { id: '2007-marcos-aurelio', name: 'Marcos Aurélio', year: 2007, pos: 'PD', secPos: ['SA'], geral: 84, def: 45, mei: 78, ata: 85, era: '2002-2008', desc: 'Golaços de fora da área.' },
+
+            // --- 2010: 3ª Gen / Copa do Brasil & Paulistão ---
+            { id: '2010-felipe', name: 'Felipe', year: 2010, pos: 'GOL', secPos: [], geral: 83, def: 85, mei: 40, ata: 30, era: '2009-2014', desc: 'Goleiro dos Meninos da Vila 2010.' },
+            { id: '2010-leo', name: 'Léo', year: 2010, pos: 'LE', secPos: ['MEI'], geral: 86, def: 83, mei: 85, ata: 81, era: '2009-2014', desc: 'Liderança e apoio.' },
+            { id: '2010-dracena', name: 'Edu Dracena', year: 2010, pos: 'ZAG', secPos: [], geral: 86, def: 88, mei: 60, ata: 45, era: '2009-2014', desc: 'Xerife e capitão.' },
+            { id: '2010-durval', name: 'Durval', year: 2010, pos: 'ZAG', secPos: ['LE'], geral: 85, def: 87, mei: 50, ata: 40, era: '2009-2014', desc: 'Zagueiro inexpugnável.' },
+            { id: '2010-para', name: 'Pará', year: 2010, pos: 'LD', secPos: ['LE'], geral: 82, def: 81, mei: 78, ata: 72, era: '2009-2014', desc: 'Garra na lateral direita.' },
+            { id: '2010-arouca', name: 'Arouca', year: 2010, pos: 'VOL', secPos: ['MC'], geral: 86, def: 84, mei: 86, ata: 70, era: '2009-2014', desc: 'Motor do meio-campo.' },
+            { id: '2010-wesley', name: 'Wesley', year: 2010, pos: 'MC', secPos: ['VOL', 'LD'], geral: 85, def: 78, mei: 86, ata: 80, era: '2009-2014', desc: 'Infiltração e ritmo.' },
+            { id: '2010-ganso', name: 'Paulo Henrique Ganso', year: 2010, pos: 'MEI', secPos: ['MC'], geral: 91, def: 55, mei: 94, ata: 84, era: '2009-2014', desc: 'Pifador supremo.' },
+            { id: '2010-neymar', name: 'Neymar Jr.', year: 2010, pos: 'PE', secPos: ['SA'], geral: 91, def: 46, mei: 84, ata: 93, era: '2009-2014', desc: 'Show na Copa do Brasil.' },
+            { id: '2010-andre', name: 'André', year: 2010, pos: 'ATA', secPos: [], geral: 85, def: 40, mei: 65, ata: 88, era: '2009-2014', desc: 'Artilheiro matador.' },
+            { id: '2010-robinho', name: 'Robinho', year: 2010, pos: 'PD', secPos: ['SA', 'PE'], geral: 89, def: 45, mei: 83, ata: 90, era: '2009-2014', desc: 'O Rei do Pedala de volta.' },
+
+            // --- 2011: Tri da América ---
+            { id: '2011-rafael', name: 'Rafael Cabral', year: 2011, pos: 'GOL', secPos: [], geral: 87, def: 89, mei: 40, ata: 30, era: '2009-2014', desc: 'Paredão do Tri.' },
+            { id: '2011-alex-sandro', name: 'Alex Sandro', year: 2011, pos: 'LE', secPos: ['MEI'], geral: 86, def: 83, mei: 84, ata: 80, era: '2009-2014', desc: 'Força na lateral.' },
+            { id: '2011-dracena', name: 'Edu Dracena', year: 2011, pos: 'ZAG', secPos: [], geral: 87, def: 89, mei: 62, ata: 48, era: '2009-2014', desc: 'Capitão da América.' },
+            { id: '2011-durval', name: 'Durval', year: 2011, pos: 'ZAG', secPos: ['LE'], geral: 86, def: 88, mei: 50, ata: 40, era: '2009-2014', desc: 'Zaga de ferro.' },
+            { id: '2011-danilo', name: 'Danilo', year: 2011, pos: 'LD', secPos: ['MC', 'VOL'], geral: 88, def: 84, mei: 87, ata: 82, era: '2009-2014', desc: 'Gol do título da América.' },
+            { id: '2011-arouca', name: 'Arouca', year: 2011, pos: 'VOL', secPos: ['MC'], geral: 87, def: 85, mei: 87, ata: 70, era: '2009-2014', desc: 'Dominador do meio.' },
+            { id: '2011-elano', name: 'Elano', year: 2011, pos: 'MC', secPos: ['MEI'], geral: 86, def: 75, mei: 87, ata: 82, era: '2009-2014', desc: 'Artilheiro do Paulistão.' },
+            { id: '2011-ganso', name: 'Paulo Henrique Ganso', year: 2011, pos: 'MEI', secPos: ['MC'], geral: 90, def: 54, mei: 93, ata: 82, era: '2009-2014', desc: 'Visão monumental.' },
+            { id: '2011-neymar', name: 'Neymar Jr.', year: 2011, pos: 'PE', secPos: ['SA', 'PD'], geral: 96, def: 48, mei: 88, ata: 98, era: '2009-2014', desc: 'Rey de América e Puskás.' },
+            { id: '2011-borges', name: 'Borges', year: 2011, pos: 'ATA', secPos: [], geral: 87, def: 40, mei: 66, ata: 90, era: '2009-2014', desc: 'Artilheiro do Brasileirão (23G).' },
+            { id: '2011-renteria', name: 'Wason Rentería', year: 2011, pos: 'PD', secPos: ['ATA'], geral: 82, def: 42, mei: 72, ata: 83, era: '2009-2014', desc: 'Velocidade e gols.' },
+
+            // --- 2012: Recopa Sul-Americana & Tri Paulista ---
+            { id: '2012-rafael', name: 'Rafael Cabral', year: 2012, pos: 'GOL', secPos: [], geral: 87, def: 89, mei: 40, ata: 30, era: '2009-2014', desc: 'Paredão da Recopa.' },
+            { id: '2012-leo', name: 'Léo', year: 2012, pos: 'LE', secPos: ['MEI'], geral: 85, def: 82, mei: 84, ata: 80, era: '2009-2014', desc: 'Experiência vitoriosa.' },
+            { id: '2012-dracena', name: 'Edu Dracena', year: 2012, pos: 'ZAG', secPos: [], geral: 86, def: 88, mei: 60, ata: 45, era: '2009-2014', desc: 'Segurança defensiva.' },
+            { id: '2012-durval', name: 'Durval', year: 2012, pos: 'ZAG', secPos: ['LE'], geral: 85, def: 87, mei: 50, ata: 40, era: '2009-2014', desc: 'Pilar da zaga.' },
+            { id: '2012-bruno-peres', name: 'Bruno Peres', year: 2012, pos: 'LD', secPos: ['PD'], geral: 83, def: 79, mei: 82, ata: 78, era: '2009-2014', desc: 'Arrancadas fulminantes.' },
+            { id: '2012-arouca', name: 'Arouca', year: 2012, pos: 'VOL', secPos: ['MC'], geral: 87, def: 85, mei: 87, ata: 70, era: '2009-2014', desc: 'Craque da final do Paulistão.' },
+            { id: '2012-henrique', name: 'Henrique', year: 2012, pos: 'MC', secPos: ['VOL'], geral: 84, def: 82, mei: 83, ata: 72, era: '2009-2014', desc: 'Equilíbrio na contenção.' },
+            { id: '2012-ganso', name: 'Paulo Henrique Ganso', year: 2012, pos: 'MEI', secPos: ['MC'], geral: 89, def: 52, mei: 92, ata: 80, era: '2009-2014', desc: 'Maestro do Tri Paulista.' },
+            { id: '2012-neymar', name: 'Neymar Jr.', year: 2012, pos: 'PE', secPos: ['SA'], geral: 97, def: 50, mei: 90, ata: 98, era: '2009-2014', desc: '43 gols no ano centenário.' },
+            { id: '2012-andre', name: 'André', year: 2012, pos: 'ATA', secPos: [], geral: 84, def: 40, mei: 65, ata: 86, era: '2009-2014', desc: 'Artilheiro da Recopa.' },
+            { id: '2012-patito', name: 'Patrício Rodríguez (Patito)', year: 2012, pos: 'PD', secPos: ['MEI'], geral: 82, def: 45, mei: 78, ata: 83, era: '2009-2014', desc: 'Dribles argentinos.' },
+
+            // --- 2014: Finalistas Copa do Brasil / Gabriel & Lucas Lima ---
+            { id: '2014-aranha', name: 'Aranha', year: 2014, pos: 'GOL', secPos: [], geral: 85, def: 87, mei: 40, ata: 30, era: '2009-2014', desc: 'Segurança e voz ativa.' },
+            { id: '2014-mena', name: 'Eugenio Mena', year: 2014, pos: 'LE', secPos: [], geral: 82, def: 81, mei: 78, ata: 72, era: '2009-2014', desc: 'Lateral titular chileno.' },
+            { id: '2014-dracena', name: 'Edu Dracena', year: 2014, pos: 'ZAG', secPos: [], geral: 85, def: 87, mei: 58, ata: 42, era: '2009-2014', desc: 'Liderança na zaga.' },
+            { id: '2014-neto', name: 'Neto', year: 2014, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 52, ata: 40, era: '2009-2014', desc: 'Defesa sólida.' },
+            { id: '2014-cicinho', name: 'Cicinho', year: 2014, pos: 'LD', secPos: ['PD'], geral: 83, def: 79, mei: 81, ata: 76, era: '2009-2014', desc: 'Velocidade pela ponta direita.' },
+            { id: '2014-arouca', name: 'Arouca', year: 2014, pos: 'VOL', secPos: ['MC'], geral: 85, def: 83, mei: 85, ata: 68, era: '2009-2014', desc: 'Motor do time.' },
+            { id: '2014-alison', name: 'Alison', year: 2014, pos: 'MC', secPos: ['VOL'], geral: 82, def: 84, mei: 76, ata: 55, era: '2009-2014', desc: 'Marcação forte.' },
+            { id: '2014-lucas-lima', name: 'Lucas Lima', year: 2014, pos: 'MEI', secPos: ['MC'], geral: 86, def: 55, mei: 88, ata: 78, era: '2009-2014', desc: 'Revelação da armação.' },
+            { id: '2014-robinho', name: 'Robinho', year: 2014, pos: 'PE', secPos: ['SA'], geral: 88, def: 45, mei: 82, ata: 89, era: '2009-2014', desc: 'O bom filho a casa torna.' },
+            { id: '2014-gabigol', name: 'Gabriel Barbosa (Gabigol)', year: 2014, pos: 'ATA', secPos: ['SA', 'PD'], geral: 85, def: 42, mei: 74, ata: 87, era: '2009-2014', desc: 'Artilheiro do time aos 18 anos.' },
+            { id: '2014-geuvanio', name: 'Geuvânio', year: 2014, pos: 'PD', secPos: ['MEI'], geral: 84, def: 48, mei: 79, ata: 85, era: '2009-2014', desc: 'Destaque e arrancadas.' },
+
+            // --- 2015: Campeões Paulistas & Vice Copa do Brasil ---
+            { id: '2015-vanderlei', name: 'Vanderlei', year: 2015, pos: 'GOL', secPos: [], geral: 87, def: 89, mei: 40, ata: 30, era: '2015-2025', desc: 'Milagres debaixo da trave.' },
+            { id: '2015-zeca', name: 'Zeca', year: 2015, pos: 'LE', secPos: ['LD'], geral: 84, def: 82, mei: 83, ata: 78, era: '2015-2025', desc: 'Ambidestro de alto nível.' },
+            { id: '2015-david-braz', name: 'David Braz', year: 2015, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 55, ata: 50, era: '2015-2025', desc: 'Gols decisivos de cabeça.' },
+            { id: '2015-gustavo-henrique', name: 'Gustavo Henrique', year: 2015, pos: 'ZAG', secPos: [], geral: 82, def: 84, mei: 50, ata: 45, era: '2015-2025', desc: 'Torre na defesa.' },
+            { id: '2015-victor-ferraz', name: 'Victor Ferraz', year: 2015, pos: 'LD', secPos: ['MEI'], geral: 83, def: 80, mei: 81, ata: 76, era: '2015-2025', desc: 'Cruzamentos refinados.' },
+            { id: '2015-renato', name: 'Renato', year: 2015, pos: 'VOL', secPos: ['MC'], geral: 85, def: 82, mei: 86, ata: 72, era: '2015-2025', desc: 'Cadência e classe.' },
+            { id: '2015-thiago-maia', name: 'Thiago Maia', year: 2015, pos: 'MC', secPos: ['VOL'], geral: 83, def: 81, mei: 84, ata: 70, era: '2015-2025', desc: 'Desarmes precisos.' },
+            { id: '2015-lucas-lima', name: 'Lucas Lima', year: 2015, pos: 'MEI', secPos: ['MC'], geral: 87, def: 58, mei: 89, ata: 80, era: '2015-2025', desc: 'Garçom do time.' },
+            { id: '2015-geuvanio', name: 'Geuvânio', year: 2015, pos: 'PE', secPos: ['PD'], geral: 83, def: 45, mei: 78, ata: 84, era: '2015-2025', desc: 'Arrancadas pela esquerda.' },
+            { id: '2015-ricardo-oliveira', name: 'Ricardo Oliveira', year: 2015, pos: 'ATA', secPos: [], geral: 88, def: 40, mei: 68, ata: 91, era: '2015-2025', desc: 'Artilheiro do Brasil (20G).' },
+            { id: '2015-gabigol', name: 'Gabriel Barbosa (Gabigol)', year: 2015, pos: 'PD', secPos: ['ATA', 'SA'], geral: 86, def: 45, mei: 76, ata: 88, era: '2015-2025', desc: 'Artilheiro da Copa do Brasil.' },
+
+            // --- 2016: Campeões Paulistas & Vice-Campeões Brasileiros ---
+            { id: '2016-vanderlei', name: 'Vanderlei', year: 2016, pos: 'GOL', secPos: [], geral: 88, def: 90, mei: 40, ata: 30, era: '2015-2025', desc: 'Melhor goleiro do futebol brasileiro.' },
+            { id: '2016-zeca', name: 'Zeca', year: 2016, pos: 'LE', secPos: ['LD'], geral: 86, def: 83, mei: 84, ata: 80, era: '2015-2025', desc: 'Campeão olímpico na lateral.' },
+            { id: '2016-luiz-felipe', name: 'Luiz Felipe', year: 2016, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 50, ata: 42, era: '2015-2025', desc: 'Zagueiro firme.' },
+            { id: '2016-gustavo-henrique', name: 'Gustavo Henrique', year: 2016, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 52, ata: 46, era: '2015-2025', desc: 'Domínio nas bolas aéreas.' },
+            { id: '2016-victor-ferraz', name: 'Victor Ferraz', year: 2016, pos: 'LD', secPos: ['MEI'], geral: 84, def: 81, mei: 82, ata: 77, era: '2015-2025', desc: 'Consistência tática.' },
+            { id: '2016-renato', name: 'Renato', year: 2016, pos: 'VOL', secPos: ['MC'], geral: 86, def: 83, mei: 87, ata: 73, era: '2015-2025', desc: 'Maestro do meio-campo.' },
+            { id: '2016-thiago-maia', name: 'Thiago Maia', year: 2016, pos: 'MC', secPos: ['VOL'], geral: 85, def: 83, mei: 86, ata: 72, era: '2015-2025', desc: 'Pegada e ouro olímpico.' },
+            { id: '2016-lucas-lima', name: 'Lucas Lima', year: 2016, pos: 'MEI', secPos: ['MC'], geral: 88, def: 58, mei: 90, ata: 82, era: '2015-2025', desc: 'Convocado para a Seleção.' },
+            { id: '2016-copete', name: 'Jonathan Copete', year: 2016, pos: 'PE', secPos: ['ATA'], geral: 84, def: 52, mei: 76, ata: 85, era: '2015-2025', desc: 'Gols decisivos e raça colombiana.' },
+            { id: '2016-ricardo-oliveira', name: 'Ricardo Oliveira', year: 2016, pos: 'ATA', secPos: [], geral: 87, def: 40, mei: 67, ata: 90, era: '2015-2025', desc: 'Capitão matador.' },
+            { id: '2016-vitor-bueno', name: 'Vitor Bueno', year: 2016, pos: 'PD', secPos: ['MEI'], geral: 85, def: 50, mei: 82, ata: 86, era: '2015-2025', desc: 'Revelação do Brasileirão 2016.' },
+
+            // --- 2017: Vice-Campeões Brasileiros ---
+            { id: '2017-vanderlei', name: 'Vanderlei', year: 2017, pos: 'GOL', secPos: [], geral: 89, def: 91, mei: 40, ata: 30, era: '2015-2025', desc: 'Milagres inesquecíveis no Brasileirão.' },
+            { id: '2017-zeca', name: 'Zeca', year: 2017, pos: 'LE', secPos: ['LD'], geral: 84, def: 82, mei: 82, ata: 78, era: '2015-2025', desc: 'Qualidade pelo lado esquerdo.' },
+            { id: '2017-verissimo', name: 'Lucas Veríssimo', year: 2017, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 58, ata: 42, era: '2015-2025', desc: 'Revelação defensiva sólida.' },
+            { id: '2017-david-braz', name: 'David Braz', year: 2017, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 52, ata: 48, era: '2015-2025', desc: 'Zagueiro titular.' },
+            { id: '2017-victor-ferraz', name: 'Victor Ferraz', year: 2017, pos: 'LD', secPos: ['MEI'], geral: 83, def: 80, mei: 81, ata: 75, era: '2015-2025', desc: 'Lateral e capitão.' },
+            { id: '2017-alison', name: 'Alison', year: 2017, pos: 'VOL', secPos: [], geral: 82, def: 85, mei: 75, ata: 55, era: '2015-2025', desc: 'Cão de guarda imponente.' },
+            { id: '2017-renato', name: 'Renato', year: 2017, pos: 'MC', secPos: ['VOL'], geral: 84, def: 81, mei: 85, ata: 70, era: '2015-2025', desc: 'Elegância e bom passe.' },
+            { id: '2017-lucas-lima', name: 'Lucas Lima', year: 2017, pos: 'MEI', secPos: ['MC'], geral: 86, def: 55, mei: 88, ata: 80, era: '2015-2025', desc: 'Lançamentos de precisão.' },
+            { id: '2017-bruno-henrique', name: 'Bruno Henrique', year: 2017, pos: 'PE', secPos: ['PD', 'SA'], geral: 88, def: 52, mei: 82, ata: 89, era: '2015-2025', desc: 'Rei das assistências no Brasil.' },
+            { id: '2017-kayke', name: 'Kayke', year: 2017, pos: 'ATA', secPos: [], geral: 82, def: 40, mei: 65, ata: 84, era: '2015-2025', desc: 'Gols de calcanhar na Libertadores.' },
+            { id: '2017-copete', name: 'Jonathan Copete', year: 2017, pos: 'PD', secPos: ['PE'], geral: 84, def: 52, mei: 76, ata: 85, era: '2015-2025', desc: 'Maior artilheiro estrangeiro do clube.' },
+
+            // --- 2019: Vice-Campeões Brasileiros (Futebol Arte Sampaoli) ---
+            { id: '2019-everson', name: 'Everson', year: 2019, pos: 'GOL', secPos: [], geral: 84, def: 85, mei: 60, ata: 30, era: '2015-2025', desc: 'Goleiro com bom passe.' },
+            { id: '2019-jorge', name: 'Jorge', year: 2019, pos: 'LE', secPos: ['MEI'], geral: 85, def: 82, mei: 84, ata: 80, era: '2015-2025', desc: 'Melhor lateral esquerdo do país.' },
+            { id: '2019-verissimo', name: 'Lucas Veríssimo', year: 2019, pos: 'ZAG', secPos: [], geral: 85, def: 87, mei: 62, ata: 45, era: '2015-2025', desc: 'Zagueiro rápido.' },
+            { id: '2019-gustavo-henrique', name: 'Gustavo Henrique', year: 2019, pos: 'ZAG', secPos: [], geral: 84, def: 86, mei: 55, ata: 48, era: '2015-2025', desc: 'Soberano nas bolas altas.' },
+            { id: '2019-victor-ferraz', name: 'Victor Ferraz', year: 2019, pos: 'LD', secPos: ['MC'], geral: 83, def: 80, mei: 82, ata: 75, era: '2015-2025', desc: 'Capitão em 2019.' },
+            { id: '2019-alison', name: 'Alison', year: 2019, pos: 'VOL', secPos: [], geral: 82, def: 85, mei: 76, ata: 55, era: '2015-2025', desc: 'Cão de guarda.' },
+            { id: '2019-sanchez', name: 'Carlos Sánchez', year: 2019, pos: 'MC', secPos: ['MEI'], geral: 86, def: 76, mei: 87, ata: 83, era: '2015-2025', desc: 'Motor uruguaio.' },
+            { id: '2019-jean-mota', name: 'Jean Mota', year: 2019, pos: 'MEI', secPos: ['LE', 'MC'], geral: 83, def: 65, mei: 84, ata: 80, era: '2015-2025', desc: 'Craque do Paulistão 2019.' },
+            { id: '2019-soteldo', name: 'Yeferson Soteldo', year: 2019, pos: 'PE', secPos: ['MEI'], geral: 86, def: 45, mei: 82, ata: 88, era: '2015-2025', desc: 'Agilidade e dribles.' },
+            { id: '2019-sasha', name: 'Eduardo Sasha', year: 2019, pos: 'ATA', secPos: ['SA'], geral: 84, def: 52, mei: 74, ata: 85, era: '2015-2025', desc: 'Movimentação incessante.' },
+            { id: '2019-marinho', name: 'Marinho', year: 2019, pos: 'PD', secPos: ['SA'], geral: 85, def: 48, mei: 78, ata: 86, era: '2015-2025', desc: 'Chutes indefensáveis.' },
+
+            // --- 2020: Finalistas da Copa Libertadores ---
+            { id: '2020-john', name: 'John', year: 2020, pos: 'GOL', secPos: [], geral: 84, def: 86, mei: 40, ata: 30, era: '2015-2025', desc: 'Milagres na semifinal da Libertadores.' },
+            { id: '2020-felipe-jonatan', name: 'Felipe Jonatan', year: 2020, pos: 'LE', secPos: ['MC'], geral: 83, def: 79, mei: 83, ata: 78, era: '2015-2025', desc: 'Apoio no meio e lateral.' },
+            { id: '2020-verissimo', name: 'Lucas Veríssimo', year: 2020, pos: 'ZAG', secPos: [], geral: 88, def: 90, mei: 64, ata: 48, era: '2015-2025', desc: 'Melhor zagueiro da América.' },
+            { id: '2020-luan-peres', name: 'Luan Peres', year: 2020, pos: 'ZAG', secPos: ['LE'], geral: 85, def: 87, mei: 68, ata: 45, era: '2015-2025', desc: 'Saída de bola canhota.' },
+            { id: '2020-para', name: 'Pará', year: 2020, pos: 'LD', secPos: [], geral: 82, def: 81, mei: 76, ata: 70, era: '2015-2025', desc: 'Experiência e garra.' },
+            { id: '2020-alison', name: 'Alison', year: 2020, pos: 'VOL', secPos: [], geral: 83, def: 86, mei: 76, ata: 55, era: '2015-2025', desc: 'Capitão de raça pura.' },
+            { id: '2020-pituca', name: 'Diego Pituca', year: 2020, pos: 'MC', secPos: ['VOL'], geral: 86, def: 83, mei: 87, ata: 78, era: '2015-2025', desc: 'Motor do time na Libertadores.' },
+            { id: '2020-jobson', name: 'Jobson', year: 2020, pos: 'MEI', secPos: ['MC', 'VOL'], geral: 82, def: 74, mei: 83, ata: 75, era: '2015-2025', desc: 'Visão de jogo.' },
+            { id: '2020-soteldo', name: 'Yeferson Soteldo', year: 2020, pos: 'PE', secPos: ['MEI'], geral: 89, def: 45, mei: 86, ata: 91, era: '2015-2025', desc: 'Golaço épico contra o Boca.' },
+            { id: '2020-kaio-jorge', name: 'Kaio Jorge', year: 2020, pos: 'ATA', secPos: ['SA'], geral: 85, def: 48, mei: 75, ata: 87, era: '2015-2025', desc: 'Artilheiro da Libertadores.' },
+            { id: '2020-marinho', name: 'Marinho', year: 2020, pos: 'PD', secPos: ['SA'], geral: 90, def: 50, mei: 83, ata: 92, era: '2015-2025', desc: 'Rei da América 2020.' },
+
+            // --- 2024: Retorno & Campeões Série B ---
+            { id: '2024-brazao', name: 'Gabriel Brazão', year: 2024, pos: 'GOL', secPos: [], geral: 81, def: 83, mei: 40, ata: 30, era: '2015-2025', desc: 'Titular no acesso.' },
+            { id: '2024-escobar', name: 'Gonzalo Escobar', year: 2024, pos: 'LE', secPos: [], geral: 81, def: 82, mei: 76, ata: 70, era: '2015-2025', desc: 'Raça argentina na esquerda.' },
+            { id: '2024-gil', name: 'Gil', year: 2024, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 50, ata: 40, era: '2015-2025', desc: 'Experiência na zaga.' },
+            { id: '2024-joaquim', name: 'Joaquim', year: 2024, pos: 'ZAG', secPos: [], geral: 83, def: 85, mei: 52, ata: 42, era: '2015-2025', desc: 'Vendido à Europa pela raça.' },
+            { id: '2024-chermont', name: 'JP Chermont', year: 2024, pos: 'LD', secPos: ['PD'], geral: 81, def: 79, mei: 80, ata: 76, era: '2015-2025', desc: 'Joia da Vila na lateral.' },
+            { id: '2024-joao-schmidt', name: 'João Schmidt', year: 2024, pos: 'VOL', secPos: ['MC'], geral: 83, def: 83, mei: 84, ata: 68, era: '2015-2025', desc: 'Pilar do meio-campo.' },
+            { id: '2024-pituca', name: 'Diego Pituca', year: 2024, pos: 'MC', secPos: ['VOL'], geral: 83, def: 82, mei: 84, ata: 74, era: '2015-2025', desc: 'Capitão do acesso.' },
+            { id: '2024-giuliano', name: 'Giuliano', year: 2024, pos: 'MEI', secPos: ['MC'], geral: 83, def: 55, mei: 85, ata: 80, era: '2015-2025', desc: 'Cérebro tático.' },
+            { id: '2024-guilherme', name: 'Guilherme', year: 2024, pos: 'PE', secPos: ['ATA'], geral: 83, def: 48, mei: 76, ata: 85, era: '2015-2025', desc: 'Destaque e gols no ano.' },
+            { id: '2024-furch', name: 'Julio Furch', year: 2024, pos: 'ATA', secPos: [], geral: 82, def: 40, mei: 62, ata: 84, era: '2015-2025', desc: 'Gols decisivos de centroavante.' },
+            { id: '2024-otero', name: 'Rômulo Otero', year: 2024, pos: 'PD', secPos: ['MEI'], geral: 82, def: 48, mei: 78, ata: 83, era: '2015-2025', desc: 'Bombas de fora da área.' },
+
+            // --- 2025: Esquadrão de Reconstrução ---
+            { id: '2025-brazao', name: 'Gabriel Brazão', year: 2025, pos: 'GOL', secPos: [], geral: 83, def: 85, mei: 42, ata: 30, era: '2015-2025', desc: 'Segurança debaixo das traves.' },
+            { id: '2025-escobar', name: 'Gonzalo Escobar', year: 2025, pos: 'LE', secPos: ['VOL'], geral: 82, def: 83, mei: 76, ata: 70, era: '2015-2025', desc: 'Marcação pesada.' },
+            { id: '2025-gil', name: 'Gil', year: 2025, pos: 'ZAG', secPos: [], geral: 82, def: 84, mei: 50, ata: 40, era: '2015-2025', desc: 'Liderança na zaga.' },
+            { id: '2025-basso', name: 'João Basso', year: 2025, pos: 'ZAG', secPos: [], geral: 82, def: 83, mei: 55, ata: 38, era: '2015-2025', desc: 'Zagueiro de firmeza.' },
+            { id: '2025-chermont', name: 'JP Chermont', year: 2025, pos: 'LD', secPos: ['PD'], geral: 83, def: 81, mei: 82, ata: 79, era: '2015-2025', desc: 'Lateral promissor.' },
+            { id: '2025-schmidt', name: 'João Schmidt', year: 2025, pos: 'VOL', secPos: ['MC'], geral: 84, def: 84, mei: 85, ata: 70, era: '2015-2025', desc: 'Consistência na cabeça de área.' },
+            { id: '2025-coutinho', name: 'Philippe Coutinho', year: 2025, pos: 'MC', secPos: ['MEI', 'PE'], geral: 85, def: 52, mei: 87, ata: 83, era: '2015-2025', desc: 'Criação técnica refinada.' },
+            { id: '2025-neymar', name: 'Neymar Jr.', year: 2025, pos: 'MEI', secPos: ['PE', 'SA'], geral: 89, def: 45, mei: 91, ata: 90, era: '2015-2025', desc: 'O Retorno do Menino da Vila.' },
+            { id: '2025-guilherme', name: 'Guilherme', year: 2025, pos: 'PE', secPos: ['ATA'], geral: 84, def: 48, mei: 77, ata: 86, era: '2015-2025', desc: 'Ponta de alta produção.' },
+            { id: '2025-gabigol', name: 'Gabriel Barbosa', year: 2025, pos: 'ATA', secPos: ['SA'], geral: 85, def: 42, mei: 73, ata: 87, era: '2015-2025', desc: 'Referência de área.' },
+            { id: '2025-rollheiser', name: 'Benjamín Rollheiser', year: 2025, pos: 'PD', secPos: ['MEI'], geral: 83, def: 48, mei: 81, ata: 84, era: '2015-2025', desc: 'Reforço de habilidade.' }
+        ];
+
+        /* HISTORIC OPPONENT TEAMS FOR THE 20-TEAM LEAGUE */
+        const HISTORIC_LEAGUE_BASE = [
+            { id: 'flamengo-2019', name: 'Flamengo 2019 (Jorge Jesus)', overall: 88, isUser: false },
+            { id: 'saopaulo-1992', name: 'São Paulo 1992 (Telê Santana)', overall: 89, isUser: false },
+            { id: 'palmeiras-1993', name: 'Palmeiras 1993 (Parmalat)', overall: 87, isUser: false },
+            { id: 'cruzeiro-2003', name: 'Cruzeiro 2003 (Tríplice Coroa)', overall: 87, isUser: false },
+            { id: 'inter-1979', name: 'Internacional 1979 (Invicto)', overall: 86, isUser: false },
+            { id: 'corinthians-2012', name: 'Corinthians 2012 (Mundial)', overall: 86, isUser: false },
+            { id: 'vasco-1998', name: 'Vasco 1998 (Libertadores)', overall: 85, isUser: false },
+            { id: 'gremio-1995', name: 'Grêmio 1995 (Felipão)', overall: 85, isUser: false },
+            { id: 'botafogo-1962', name: 'Botafogo 1962 (Garrincha)', overall: 89, isUser: false },
+            { id: 'fluminense-2012', name: 'Fluminense 2012 (Fred)', overall: 84, isUser: false },
+            { id: 'atletico-2013', name: 'Atlético-MG 2013 (Ronaldinho)', overall: 85, isUser: false },
+            { id: 'bahia-1988', name: 'Bahia 1988 (Bobô)', overall: 82, isUser: false },
+            { id: 'guarani-1978', name: 'Guarani 1978 (Careca)', overall: 82, isUser: false },
+            { id: 'coritiba-1985', name: 'Coritiba 1985 (Rafael)', overall: 81, isUser: false },
+            { id: 'sport-1987', name: 'Sport 1987 (Ribamar)', overall: 81, isUser: false },
+            { id: 'atletico-2001', name: 'Athletico-PR 2001 (Alex Mineiro)', overall: 82, isUser: false },
+            { id: 'santos-2002', name: 'Santos 2002 (Diego e Robinho)', overall: 86, isUser: false },
+            { id: 'santos-2011', name: 'Santos 2011 (Neymar e Ganso)', overall: 88, isUser: false },
+            { id: 'bragantino-2021', name: 'Red Bull Bragantino 2021', overall: 79, isUser: false }
+        ];
+
+        /* Featured 28 Complete Squad Years Pool */
+        const FEATURED_YEARS = [
+            1958, 1962, 1963, 1965, 1968, 1973, 1978, 1979, 1984, 
+            1995, 1997, 1998, 2002, 2003, 2004, 2006, 2007, 2010, 
+            2011, 2012, 2014, 2015, 2016, 2017, 2019, 2020, 2024, 2025
+        ];
+
+        /* Structured Formations Schema (Structured from Left to Right, Defense to Offense) */
+        const FORMATIONS = {
+            '4-4-2': {
+                attackRow: [
+                    { key: 'PE', label: '2º Atacante (Esq)', defaultPos: 'PE' },
+                    { key: 'ATA', label: 'Centroavante', defaultPos: 'ATA' }
+                ],
+                offMidRow: [
+                    { key: 'MEI1', label: 'Meia Armador (Esq)', defaultPos: 'MEI' },
+                    { key: 'MEI2', label: 'Meia Armador (Dir)', defaultPos: 'MEI' }
+                ],
+                defMidRow: [
+                    { key: 'VOL', label: 'Volante Recuado', defaultPos: 'VOL' },
+                    { key: 'MC', label: 'Meio Central', defaultPos: 'MC' }
+                ],
+                defRow: [
+                    { key: 'LE', label: 'Lat. Esquerdo', defaultPos: 'LE' },
+                    { key: 'ZAG1', label: 'Zagueiro (Esq)', defaultPos: 'ZAG' },
+                    { key: 'ZAG2', label: 'Zagueiro (Dir)', defaultPos: 'ZAG' },
+                    { key: 'LD', label: 'Lat. Direito', defaultPos: 'LD' }
+                ],
+                golRow: [
+                    { key: 'GOL', label: 'Goleiro', defaultPos: 'GOL' }
+                ]
+            },
+            '4-3-3': {
+                attackRow: [
+                    { key: 'PE', label: 'Ponta Esquerda', defaultPos: 'PE' },
+                    { key: 'ATA', label: 'Centroavante', defaultPos: 'ATA' },
+                    { key: 'PD', label: 'Ponta Direita', defaultPos: 'PD' }
+                ],
+                offMidRow: [
+                    { key: 'MC', label: 'Meio Central (Esq)', defaultPos: 'MC' },
+                    { key: 'MEI', label: 'Meia Armador (Dir)', defaultPos: 'MEI' }
+                ],
+                defMidRow: [
+                    { key: 'VOL', label: 'Volante Recuado', defaultPos: 'VOL' }
+                ],
+                defRow: [
+                    { key: 'LE', label: 'Lat. Esquerdo', defaultPos: 'LE' },
+                    { key: 'ZAG1', label: 'Zagueiro (Esq)', defaultPos: 'ZAG' },
+                    { key: 'ZAG2', label: 'Zagueiro (Dir)', defaultPos: 'ZAG' },
+                    { key: 'LD', label: 'Lat. Direito', defaultPos: 'LD' }
+                ],
+                golRow: [
+                    { key: 'GOL', label: 'Goleiro', defaultPos: 'GOL' }
+                ]
+            },
+            '4-2-3-1': {
+                attackRow: [
+                    { key: 'ATA', label: 'Centroavante', defaultPos: 'ATA' }
+                ],
+                offMidRow: [
+                    { key: 'PE', label: 'Meia/Ponta (Esq)', defaultPos: 'PE' },
+                    { key: 'MEI', label: 'Meia Central', defaultPos: 'MEI' },
+                    { key: 'PD', label: 'Meia/Ponta (Dir)', defaultPos: 'PD' }
+                ],
+                defMidRow: [
+                    { key: 'VOL1', label: 'Volante (Esq)', defaultPos: 'VOL' },
+                    { key: 'VOL2', label: 'Volante (Dir)', defaultPos: 'VOL' }
+                ],
+                defRow: [
+                    { key: 'LE', label: 'Lat. Esquerdo', defaultPos: 'LE' },
+                    { key: 'ZAG1', label: 'Zagueiro (Esq)', defaultPos: 'ZAG' },
+                    { key: 'ZAG2', label: 'Zagueiro (Dir)', defaultPos: 'ZAG' },
+                    { key: 'LD', label: 'Lat. Direito', defaultPos: 'LD' }
+                ],
+                golRow: [
+                    { key: 'GOL', label: 'Goleiro', defaultPos: 'GOL' }
+                ]
+            }
+        };
+
+        /* State Variables */
+        let chosenStartFormation = '4-4-2';
+        let globalDrawnYear = 1962;
+        let rerollsRemaining = 2; 
+        let userSquad = {};       
+        let selectedFootballer = null; 
+        let drawnYearsHistory = []; // Cooldown buffer to avoid repeated years
+        let erasRadarChart = null;
+        let topPlayersChart = null;
+        let simInterval = null;
+        let currentLeagueTable = [];
+
+        /* Initialization */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCards();
+            initCharts();
+        });
+
+        function showStartScreen() {
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        function selectStartFormation(fmt) {
+            chosenStartFormation = fmt;
+            const keys = ['4-4-2', '4-3-3', '4-2-3-1'];
+            keys.forEach(k => {
+                const label = document.getElementById(`start-form-label-${k.replace(/-/g, '')}`);
+                const radio = label.querySelector('input[type="radio"]');
+                const title = label.querySelector('span');
+
+                if (k === fmt) {
+                    label.className = 'cursor-pointer border-2 border-amber-400 bg-amber-400/10 p-3 rounded-xl transition flex flex-col justify-between space-y-1';
+                    radio.checked = true;
+                    if (title) title.className = 'font-black text-amber-400 text-sm';
+                } else {
+                    label.className = 'cursor-pointer border-2 border-zinc-800 bg-zinc-900 p-3 rounded-xl hover:border-zinc-700 transition flex flex-col justify-between space-y-1';
+                    radio.checked = false;
+                    if (title) title.className = 'font-black text-white text-sm';
+                }
+            });
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            const selectEl = document.getElementById('formation-select');
+            if (selectEl) selectEl.value = chosenStartFormation;
+            startNewDraftSession();
+        }
+
+        /* Tab Switcher */
+        function switchTab(tabId) {
+            const tabs = ['builder', 'table', 'cards', 'analytics'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const sec = document.getElementById(`section-${t}`);
+                if (t === tabId) {
+                    btn.className = 'px-3.5 py-2 rounded-lg transition-all bg-amber-400 text-black font-black shadow flex items-center gap-1.5';
+                    sec.classList.remove('hidden');
+                } else {
+                    btn.className = 'px-3.5 py-2 rounded-lg transition-all text-zinc-300 hover:text-white hover:bg-zinc-800 flex items-center gap-1.5';
+                    sec.classList.add('hidden');
+                }
+            });
+
+            if (tabId === 'analytics') {
+                setTimeout(() => {
+                    if (erasRadarChart) erasRadarChart.update();
+                    if (topPlayersChart) topPlayersChart.update();
+                }, 100);
+            }
+        }
+
+        /* Helper to check strict position compatibility */
+        function isPositionCompatible(player, targetPos) {
+            if (!player) return false;
+            if (player.pos === targetPos) return true;
+            if (player.secPos && player.secPos.includes(targetPos)) return true;
+            return false;
+        }
+
+        /* Helper to get list of open matching slots for a player */
+        function getOpenSlotsForPlayer(player) {
+            const formationKey = document.getElementById('formation-select').value;
+            const schema = FORMATIONS[formationKey];
+            const allSlots = [
+                ...schema.attackRow,
+                ...schema.offMidRow,
+                ...schema.defMidRow,
+                ...schema.defRow,
+                ...schema.golRow
+            ];
+            return allSlots.filter(s => !userSquad[s.key] && isPositionCompatible(player, s.defaultPos));
+        }
+
+        /* ================= ANTI-REPETITION DRAFT GAME ENGINE ================= */
+        function pickRandomYear() {
+            let availablePool = FEATURED_YEARS.filter(y => !drawnYearsHistory.includes(y));
+            if (availablePool.length === 0) {
+                drawnYearsHistory = [];
+                availablePool = [...FEATURED_YEARS];
+            }
+            
+            const idx = Math.floor(Math.random() * availablePool.length);
+            const chosenYear = availablePool[idx];
+            
+            drawnYearsHistory.push(chosenYear);
+            return chosenYear;
+        }
+
+        function startNewDraftSession() {
+            if (simInterval) clearInterval(simInterval);
+            rerollsRemaining = 2;
+            drawnYearsHistory = [];
+            globalDrawnYear = pickRandomYear();
+            userSquad = {};
+            selectedFootballer = null;
+            updateRerollUI();
+            renderSidePanelFootballers();
+            renderPitchSlots();
+            updateSquadMetrics();
+            document.getElementById('sim-live-box').classList.add('hidden');
+
+            const currentFmt = document.getElementById('formation-select').value;
+            document.getElementById('draft-step-indicator').innerHTML = `Passo 1/11 [Esquema ${currentFmt}]: Escolha um futebolista do esquadrão de <strong>${globalDrawnYear}</strong>.`;
+        }
+
+        function useReroll() {
+            if (rerollsRemaining <= 0) return;
+
+            const dice = document.getElementById('dice-icon');
+            if (dice) {
+                dice.classList.add('dice-anim');
+                setTimeout(() => dice.classList.remove('dice-anim'), 450);
+            }
+
+            rerollsRemaining--;
+            globalDrawnYear = pickRandomYear();
+            selectedFootballer = null;
+
+            updateRerollUI();
+            renderSidePanelFootballers();
+            renderPitchSlots();
+            document.getElementById('draft-step-indicator').innerHTML = `Ano re-sorteado para <strong>${globalDrawnYear}</strong>. Escolha um futebolista no painel lateral.`;
+        }
+
+        function triggerNextYearDraw() {
+            globalDrawnYear = pickRandomYear();
+            selectedFootballer = null;
+
+            const badge = document.getElementById('current-year-badge');
+            badge.classList.add('scale-110');
+            setTimeout(() => badge.classList.remove('scale-110'), 300);
+
+            updateRerollUI();
+            renderSidePanelFootballers();
+        }
+
+        function updateRerollUI() {
+            document.getElementById('current-year-badge').innerText = globalDrawnYear;
+            document.getElementById('side-panel-year-label').innerText = globalDrawnYear;
+            
+            const countText = document.getElementById('reroll-count-text');
+            const rerollBtn = document.getElementById('reroll-btn');
+            const infoMsg = document.getElementById('reroll-info-msg');
+
+            countText.innerText = `${rerollsRemaining} / 2`;
+
+            if (rerollsRemaining <= 0) {
+                countText.className = 'text-lg font-black text-red-500';
+                rerollBtn.disabled = true;
+                infoMsg.innerText = '🔒 Limite de 2 re-sorteios esgotado neste draft.';
+                infoMsg.className = 'text-[11px] text-red-400 font-bold text-center';
+            } else {
+                countText.className = 'text-lg font-black text-amber-400';
+                rerollBtn.disabled = false;
+                infoMsg.innerText = `⚡ Você tem mais ${rerollsRemaining} re-sorteio(s) de ano disponível(is).`;
+                infoMsg.className = 'text-[11px] text-amber-400 font-bold text-center';
+            }
+        }
+
+        /* Render Side Panel Footballers */
+        function renderSidePanelFootballers() {
+            const container = document.getElementById('side-footballers-list');
+            const countBadge = document.getElementById('selectable-count-badge');
+            const banner = document.getElementById('selected-player-banner');
+            container.innerHTML = '';
+
+            if (selectedFootballer) {
+                banner.classList.remove('hidden');
+                document.getElementById('selected-player-name').innerText = `${selectedFootballer.name}`;
+                document.getElementById('selected-player-overall').innerText = selectedFootballer.geral;
+                
+                const allPos = [selectedFootballer.pos, ...selectedFootballer.secPos].join(', ');
+                document.getElementById('allowed-positions-list').innerText = allPos;
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            const pickedIds = Object.values(userSquad).map(p => p.id);
+            const eligible = PLAYERS_DB.filter(p => p.year === globalDrawnYear && !pickedIds.includes(p.id));
+            eligible.sort((a, b) => b.geral - a.geral);
+
+            countBadge.innerText = `${eligible.length} disponíveis`;
+
+            if (eligible.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-zinc-400 space-y-2">
+                        <p class="text-xs font-semibold">Nenhum outro atleta de ${globalDrawnYear} disponível no momento.</p>
+                        <button onclick="useReroll()" class="text-xs bg-amber-400 text-black px-3 py-1.5 rounded-lg font-black shadow">
+                            🎲 Re-sortear Ano
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            eligible.forEach(p => {
+                const isSelected = selectedFootballer && selectedFootballer.id === p.id;
+                const openSlots = getOpenSlotsForPlayer(p);
+                const hasOpenSlot = openSlots.length > 0;
+
+                const card = document.createElement('div');
+                card.className = `p-3 rounded-xl border transition ${
+                    isSelected 
+                        ? 'bg-amber-400 text-black border-black font-bold shadow-md scale-[1.02] cursor-pointer' 
+                        : hasOpenSlot 
+                            ? 'bg-zinc-50 border-zinc-200 hover:bg-zinc-100 text-zinc-900 cursor-pointer' 
+                            : 'bg-zinc-100 border-zinc-200 text-zinc-400 cursor-not-allowed opacity-60'
+                }`;
+
+                if (hasOpenSlot || isSelected) {
+                    card.onclick = () => selectFootballer(p);
+                } else {
+                    card.onclick = () => {
+                        alert(`⚠️ ${p.name} joga de [${[p.pos, ...p.secPos].join('/')}], mas todas as vagas dessa posição já estão ocupadas no seu esquema tático! Use o botão "Re-sortear Ano" ou escolha outro titular do ano.`);
+                    };
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-base font-black ${isSelected ? 'text-black' : hasOpenSlot ? 'text-amber-600' : 'text-zinc-400'}">${p.geral}</span>
+                            <div>
+                                <h4 class="font-bold text-xs ${isSelected ? 'text-black' : hasOpenSlot ? 'text-black' : 'text-zinc-600'}">${p.name}</h4>
+                                <span class="text-[10px] ${isSelected ? 'text-zinc-800' : 'text-zinc-500'}">
+                                    Pos: <strong>${p.pos}</strong> ${p.secPos.length ? '(Sec: ' + p.secPos.join('/') + ')' : ''}
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[9px] font-black px-2 py-0.5 rounded ${
+                                isSelected 
+                                    ? 'bg-black text-amber-400' 
+                                    : hasOpenSlot 
+                                        ? 'bg-amber-100 text-amber-900 border border-amber-300' 
+                                        : 'bg-zinc-200 text-zinc-500'
+                            }">
+                                ${isSelected ? 'SELECIONADO' : hasOpenSlot ? 'ESCOLHER' : 'SEM VAGA'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectFootballer(player) {
+            const openSlots = getOpenSlotsForPlayer(player);
+            if (openSlots.length === 0) {
+                alert(`⚠️ ${player.name} joga de [${[player.pos, ...player.secPos].join('/')}], mas não há vagas livres para esta posição no seu esquema tático!`);
+                return;
+            }
+
+            selectedFootballer = player;
+            renderSidePanelFootballers();
+            renderPitchSlots();
+
+            const stepText = document.getElementById('draft-step-indicator');
+            stepText.innerHTML = `👉 <strong>${player.name}</strong> selecionado! Clique em uma vaga <span class="text-amber-400 font-bold uppercase">destacada</span> de <strong>${[player.pos, ...player.secPos].join('/')}</strong> no campo.`;
+        }
+
+        function changeFormation() {
+            userSquad = {};
+            selectedFootballer = null;
+            chosenStartFormation = document.getElementById('formation-select').value;
+            renderSidePanelFootballers();
+            renderPitchSlots();
+            updateSquadMetrics();
+            document.getElementById('sim-live-box').classList.add('hidden');
+        }
+
+        function clearSquad() {
+            userSquad = {};
+            selectedFootballer = null;
+            drawnYearsHistory = [];
+            renderSidePanelFootballers();
+            renderPitchSlots();
+            updateSquadMetrics();
+            document.getElementById('sim-live-box').classList.add('hidden');
+        }
+
+        /* Render Pitch Slots with Structured Tiers & Correct Left/Right Orientation */
+        function renderPitchSlots() {
+            const formationKey = document.getElementById('formation-select').value;
+            const schema = FORMATIONS[formationKey];
+            const container = document.getElementById('pitch-slots-container');
+            container.innerHTML = '';
+
+            const rowsToRender = [
+                { id: 'attack', items: schema.attackRow, title: 'Ataque' },
+                { id: 'offMid', items: schema.offMidRow, title: 'Meio Ofensivo / Armação' },
+                { id: 'defMid', items: schema.defMidRow, title: 'Volantes / Contenção' },
+                { id: 'def', items: schema.defRow, title: 'Linha Defensiva' },
+                { id: 'gol', items: schema.golRow, title: 'Goleiro' }
+            ];
+
+            rowsToRender.forEach(rowInfo => {
+                if (!rowInfo.items || rowInfo.items.length === 0) return;
+
+                const rowEl = document.createElement('div');
+                rowEl.className = 'flex justify-around items-center w-full my-0.5';
+
+                rowInfo.items.forEach(slot => {
+                    const player = userSquad[slot.key];
+                    const slotBtn = document.createElement('button');
+
+                    if (player) {
+                        const statusColor = getPositionCompatibilityColor(player, slot.defaultPos);
+                        slotBtn.className = `flex flex-col items-center justify-between p-1.5 rounded-xl bg-black/90 text-white border-2 ${statusColor} w-24 sm:w-28 shadow-lg hover:scale-105 transition relative z-10`;
+                        slotBtn.onclick = () => removePlayerFromSlot(slot.key);
+
+                        slotBtn.innerHTML = `
+                            <span class="text-[9px] uppercase font-black text-amber-400 leading-tight truncate max-w-full">${slot.label}</span>
+                            <span class="text-xs font-black truncate max-w-[90px] text-white my-0.5">${player.name.split(' ')[0]}</span>
+                            <div class="flex items-center justify-between w-full text-[9px] text-zinc-300 border-t border-zinc-800 pt-0.5 mt-0.5">
+                                <span class="bg-amber-400 text-black font-black px-1 rounded text-[8px]">${player.year}</span>
+                                <span class="font-black text-amber-400 text-xs">${player.geral}</span>
+                            </div>
+                        `;
+                    } else {
+                        const isTargeting = selectedFootballer !== null;
+                        const isCompatible = isTargeting && isPositionCompatible(selectedFootballer, slot.defaultPos);
+
+                        if (isTargeting) {
+                            if (isCompatible) {
+                                slotBtn.className = 'flex flex-col items-center justify-between p-2 rounded-xl border-2 slot-target-highlight bg-amber-400/25 text-white border-amber-400 w-24 sm:w-28 shadow-lg transform scale-105 transition relative z-10';
+                                slotBtn.onclick = () => assignSelectedPlayerToSlot(slot.key, slot.defaultPos);
+                                slotBtn.innerHTML = `
+                                    <div class="w-full text-[9px] uppercase font-black text-center text-amber-300 truncate">
+                                        ${slot.label}
+                                    </div>
+                                    <span class="text-xs font-black my-1 text-amber-400">
+                                        👉 ENCAIXAR
+                                    </span>
+                                    <span class="text-[8px] font-bold text-amber-200 uppercase">${slot.defaultPos}</span>
+                                `;
+                            } else {
+                                slotBtn.className = 'flex flex-col items-center justify-between p-2 rounded-xl border-2 border-dashed border-zinc-800 bg-black/50 text-zinc-600 w-24 sm:w-28 opacity-40 cursor-not-allowed relative z-10';
+                                slotBtn.onclick = () => {
+                                    alert(`🚫 ${selectedFootballer.name} não pode jogar como ${slot.label} (${slot.defaultPos}). Posições válidas: [${[selectedFootballer.pos, ...selectedFootballer.secPos].join('/')}].`);
+                                };
+                                slotBtn.innerHTML = `
+                                    <div class="w-full text-[9px] uppercase font-bold text-center text-zinc-600 truncate">
+                                        ${slot.label}
+                                    </div>
+                                    <span class="text-[10px] font-bold my-1 text-zinc-600">
+                                        🔒 Incompatível
+                                    </span>
+                                    <span class="text-[8px] text-zinc-700">${slot.defaultPos}</span>
+                                `;
+                            }
+                        } else {
+                            slotBtn.className = 'flex flex-col items-center justify-between p-2 rounded-xl border-2 border-dashed border-emerald-500/50 bg-emerald-950/60 text-emerald-300 w-24 sm:w-28 hover:bg-emerald-900/80 transition shadow relative z-10';
+                            slotBtn.onclick = () => {
+                                alert(`Selecione primeiro um atleta do ano ${globalDrawnYear} no painel lateral!`);
+                            };
+
+                            slotBtn.innerHTML = `
+                                <div class="w-full text-[9px] uppercase font-black text-center text-emerald-300 truncate">
+                                    ${slot.label}
+                                </div>
+                                <span class="text-xs font-black my-1 text-amber-400">
+                                    + Vaga Vazia
+                                </span>
+                                <span class="text-[8px] font-bold text-emerald-400/80">${slot.defaultPos}</span>
+                            `;
+                        }
+                    }
+                    rowEl.appendChild(slotBtn);
+                });
+                container.appendChild(rowEl);
+            });
+        }
+
+        function assignSelectedPlayerToSlot(slotKey, defaultPos) {
+            if (!selectedFootballer) return;
+
+            if (!isPositionCompatible(selectedFootballer, defaultPos)) {
+                alert(`⚠️ O atleta ${selectedFootballer.name} não joga na posição ${defaultPos}!`);
+                return;
+            }
+
+            userSquad[slotKey] = selectedFootballer;
+            const assignedPlayerName = selectedFootballer.name;
+
+            triggerNextYearDraw();
+
+            renderPitchSlots();
+            updateSquadMetrics();
+
+            const stepText = document.getElementById('draft-step-indicator');
+            const count = Object.keys(userSquad).length;
+            stepText.innerHTML = `✅ <strong>${assignedPlayerName}</strong> escalado com sucesso! Sorteado novo ano <strong>${globalDrawnYear}</strong> para a vaga ${count + 1}/11.`;
+        }
+
+        function removePlayerFromSlot(slotKey) {
+            delete userSquad[slotKey];
+            renderPitchSlots();
+            renderSidePanelFootballers();
+            updateSquadMetrics();
+            document.getElementById('sim-live-box').classList.add('hidden');
+        }
+
+        function getPositionCompatibilityColor(player, targetPos) {
+            if (player.pos === targetPos) return 'border-emerald-500';
+            if (player.secPos.includes(targetPos)) return 'border-amber-400';
+            return 'border-zinc-500';
+        }
+
+        /* Metrics Update */
+        function updateSquadMetrics() {
+            const count = Object.keys(userSquad).length;
+            const badge = document.getElementById('squad-complete-badge');
+            const simAnimBtn = document.getElementById('run-sim-animated-btn');
+            const simFastBtn = document.getElementById('run-sim-fast-btn');
+
+            badge.innerText = `${count}/11 Escalados`;
+
+            if (count < 11) {
+                badge.className = 'text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded font-bold';
+                simAnimBtn.disabled = true;
+                simFastBtn.disabled = true;
+                document.getElementById('team-overall-val').innerText = '--';
+                document.getElementById('team-def-val').innerText = '--';
+                document.getElementById('team-mei-val').innerText = '--';
+                document.getElementById('team-ata-val').innerText = '--';
+                return;
+            }
+
+            badge.className = 'text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold';
+            simAnimBtn.disabled = false;
+            simFastBtn.disabled = false;
+
+            const formationKey = document.getElementById('formation-select').value;
+            const schema = FORMATIONS[formationKey];
+            const allSlots = [
+                ...schema.attackRow,
+                ...schema.offMidRow,
+                ...schema.defMidRow,
+                ...schema.defRow,
+                ...schema.golRow
+            ];
+
+            let totalDef = 0, totalMei = 0, totalAta = 0, totalGeral = 0;
+
+            allSlots.forEach(slot => {
+                const player = userSquad[slot.key];
+                let factor = player.pos === slot.defaultPos ? 1.0 : 0.96;
+                totalDef += player.def * factor;
+                totalMei += player.mei * factor;
+                totalAta += player.ata * factor;
+                totalGeral += player.geral * factor;
+            });
+
+            document.getElementById('team-overall-val').innerText = (totalGeral / 11).toFixed(1);
+            document.getElementById('team-def-val').innerText = (totalDef / 11).toFixed(1);
+            document.getElementById('team-mei-val').innerText = (totalMei / 11).toFixed(1);
+            document.getElementById('team-ata-val').innerText = (totalAta / 11).toFixed(1);
+        }
+
+        /* ================= HISTORIC LEAGUE SIMULATION ENGINE ================= */
+        function buildLeagueTeams() {
+            const userOverall = parseFloat(document.getElementById('team-overall-val').innerText) || 85.0;
+            const userTeam = {
+                id: 'santos-user-draft',
+                name: 'Seu Santos FC (Draft)',
+                overall: userOverall,
+                isUser: true,
+                p: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+            };
+
+            const opponents = HISTORIC_LEAGUE_BASE.map(t => ({
+                ...t,
+                p: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+            }));
+
+            return [userTeam, ...opponents];
+        }
+
+        function sortStandings(teams) {
+            return teams.sort((a, b) => {
+                if (b.p !== a.p) return b.p - a.p;
+                if (b.v !== a.v) return b.v - a.v;
+                if (b.sg !== a.sg) return b.sg - a.sg;
+                if (b.gp !== a.gp) return b.gp - a.gp;
+                return b.overall - a.overall;
+            });
+        }
+
+        function simulateMatch(teamA, teamB) {
+            const diff = (teamA.overall - teamB.overall) / 8;
+            let goalsA = Math.max(0, Math.round(1.5 + diff + (Math.random() * 1.4)));
+            let goalsB = Math.max(0, Math.round(1.2 - diff + (Math.random() * 1.2)));
+
+            if (teamA.isUser && teamA.overall >= 90 && Math.random() < 0.90) {
+                if (goalsA <= goalsB) goalsA = goalsB + 1;
+            }
+            if (teamB.isUser && teamB.overall >= 90 && Math.random() < 0.90) {
+                if (goalsB <= goalsA) goalsB = goalsA + 1;
+            }
+
+            teamA.j++;
+            teamB.j++;
+            teamA.gp += goalsA;
+            teamA.gc += goalsB;
+            teamB.gp += goalsB;
+            teamB.gc += goalsA;
+            teamA.sg = teamA.gp - teamA.gc;
+            teamB.sg = teamB.gp - teamB.gc;
+
+            if (goalsA > goalsB) {
+                teamA.v++;
+                teamA.p += 3;
+                teamB.d++;
+            } else if (goalsA === goalsB) {
+                teamA.e++;
+                teamB.e++;
+                teamA.p += 1;
+                teamB.p += 1;
+            } else {
+                teamB.v++;
+                teamB.p += 3;
+                teamA.d++;
+            }
+
+            return { goalsA, goalsB };
+        }
+
+        function startLeagueSimulation(animated) {
+            if (simInterval) clearInterval(simInterval);
+
+            currentLeagueTable = buildLeagueTeams();
+            const liveBox = document.getElementById('sim-live-box');
+            liveBox.classList.remove('hidden');
+
+            const progressBar = document.getElementById('sim-progress-bar');
+            const roundBadge = document.getElementById('round-ticker-badge');
+            const liveFeed = document.getElementById('sim-live-feed');
+
+            if (!animated) {
+                for (let r = 1; r <= 38; r++) {
+                    runLeagueRound(r, currentLeagueTable);
+                }
+                progressBar.style.width = '100%';
+                roundBadge.innerText = 'Rodada 38/38 (Finalizada)';
+                renderStandingsTable(currentLeagueTable);
+                updateSantosLiveSpotlight(currentLeagueTable);
+                liveFeed.innerHTML = `🏁 <strong>Campeonato Histórico Finalizado!</strong> Confira a classificação completa na aba "Tabela da Liga Histórica".`;
+                return;
+            }
+
+            let round = 1;
+            progressBar.style.width = '0%';
+            liveFeed.innerText = '🏁 Iniciando a Liga dos Esquadrões Históricos...';
+
+            simInterval = setInterval(() => {
+                if (round > 38) {
+                    clearInterval(simInterval);
+                    roundBadge.innerText = 'Rodada 38/38 (Finalizada)';
+                    liveFeed.innerHTML = `🎉 <strong>Fim da Temporada!</strong> Seu Santos FC disputou 38 rodadas intensas. Veja a posição final na tabela!`;
+                    return;
+                }
+
+                const userMatchLog = runLeagueRound(round, currentLeagueTable);
+                
+                progressBar.style.width = `${(round / 38) * 100}%`;
+                roundBadge.innerText = `Rodada ${round}/38`;
+                
+                updateSantosLiveSpotlight(currentLeagueTable);
+                renderStandingsTable(currentLeagueTable);
+
+                if (userMatchLog) {
+                    liveFeed.innerHTML = `<strong>Rodada ${round}:</strong> ${userMatchLog}`;
+                }
+
+                round++;
+            }, 180);
+        }
+
+        function runLeagueRound(round, teams) {
+            const shuffled = [...teams];
+            let userResultMsg = '';
+
+            for (let i = 0; i < shuffled.length - 1; i += 2) {
+                const teamA = shuffled[i];
+                const teamB = shuffled[i + 1];
+                const res = simulateMatch(teamA, teamB);
+
+                if (teamA.isUser || teamB.isUser) {
+                    const userTeam = teamA.isUser ? teamA : teamB;
+                    const oppTeam = teamA.isUser ? teamB : teamA;
+                    const uGoals = teamA.isUser ? res.goalsA : res.goalsB;
+                    const oGoals = teamA.isUser ? res.goalsB : res.goalsA;
+
+                    if (uGoals > oGoals) {
+                        userResultMsg = `🟢 <span class="font-bold text-emerald-600">Vitória!</span> ${userTeam.name} <strong>${uGoals} x ${oGoals}</strong> ${oppTeam.name}`;
+                    } else if (uGoals === oGoals) {
+                        userResultMsg = `🟡 <span class="font-bold text-amber-600">Empate.</span> ${userTeam.name} <strong>${uGoals} x ${oGoals}</strong> ${oppTeam.name}`;
+                    } else {
+                        userResultMsg = `🔴 <span class="font-bold text-red-600">Derrota.</span> ${userTeam.name} <strong>${uGoals} x ${oGoals}</strong> ${oppTeam.name}`;
+                    }
+                }
+            }
+            sortStandings(teams);
+            return userResultMsg;
+        }
+
+        function updateSantosLiveSpotlight(teams) {
+            const sorted = sortStandings([...teams]);
+            const rank = sorted.findIndex(t => t.isUser) + 1;
+            const userTeam = sorted.find(t => t.isUser);
+
+            if (userTeam) {
+                document.getElementById('live-santos-rank').innerText = `${rank}º Lugar`;
+                document.getElementById('live-santos-stats').innerText = `${userTeam.p} Pts | ${userTeam.v}V-${userTeam.e}E-${userTeam.d}D | ${userTeam.sg > 0 ? '+' : ''}${userTeam.sg} SG`;
+            }
+        }
+
+        function renderStandingsTable(teams) {
+            const tbody = document.getElementById('standings-table-body');
+            tbody.innerHTML = '';
+
+            const sorted = sortStandings([...teams]);
+
+            sorted.forEach((team, index) => {
+                const tr = document.createElement('tr');
+                const isUser = team.isUser;
+                const pos = index + 1;
+
+                const aproveitamento = team.j > 0 ? ((team.p / (team.j * 3)) * 100).toFixed(1) : '0.0';
+
+                tr.className = isUser 
+                    ? 'bg-amber-400 text-black font-black border-2 border-black shadow' 
+                    : index % 2 === 0 ? 'bg-white hover:bg-zinc-50' : 'bg-zinc-50 hover:bg-zinc-100';
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 text-center font-black">${pos}º</td>
+                    <td class="py-2.5 px-4 font-bold flex items-center gap-2">
+                        ${isUser 
+                            ? `<span class="sfc-shield-container">
+                                <span class="sfc-shield-sm">
+                                    <span class="sfc-header">SFC</span>
+                                    <span class="sfc-body"></span>
+                                </span>
+                               </span>`
+                            : '⚽'
+                        }
+                        <span>${team.name}</span>
+                        ${isUser ? '<span class="text-[9px] bg-black text-amber-400 px-1.5 py-0.5 rounded font-black uppercase ml-1">SEU TIME</span>' : ''}
+                    </td>
+                    <td class="py-2.5 px-2 text-center font-black ${isUser ? 'text-black' : 'text-amber-600'}">${team.p}</td>
+                    <td class="py-2.5 px-2 text-center">${team.j}</td>
+                    <td class="py-2.5 px-2 text-center font-bold text-emerald-600">${team.v}</td>
+                    <td class="py-2.5 px-2 text-center text-amber-700">${team.e}</td>
+                    <td class="py-2.5 px-2 text-center text-red-600">${team.d}</td>
+                    <td class="py-2.5 px-2 text-center">${team.gp}</td>
+                    <td class="py-2.5 px-2 text-center">${team.gc}</td>
+                    <td class="py-2.5 px-2 text-center font-bold ${team.sg > 0 ? 'text-emerald-700' : team.sg < 0 ? 'text-red-600' : ''}">${team.sg > 0 ? '+' : ''}${team.sg}</td>
+                    <td class="py-2.5 px-3 text-center font-bold">${aproveitamento}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* ================= CARDS TAB ================= */
+        function renderCards() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const era = document.getElementById('era-filter').value;
+            const pos = document.getElementById('pos-filter').value;
+            const sort = document.getElementById('sort-filter').value;
+
+            let filtered = PLAYERS_DB.filter(p => {
+                const matchSearch = p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search);
+                const matchEra = era === 'ALL' || p.era === era;
+                let matchPos = true;
+                if (pos !== 'ALL') {
+                    if (pos === 'GOL') matchPos = p.pos === 'GOL';
+                    else if (pos === 'ZAG') matchPos = p.pos === 'ZAG';
+                    else if (pos === 'LD') matchPos = p.pos === 'LD' || p.pos === 'LE';
+                    else if (pos === 'VOL') matchPos = p.pos === 'VOL';
+                    else if (pos === 'MEI') matchPos = p.pos === 'MEI' || p.pos === 'MC';
+                    else if (pos === 'ATA') matchPos = ['PE','PD','SA','ATA'].includes(p.pos);
+                }
+                return matchSearch && matchEra && matchPos;
+            });
+
+            filtered.sort((a, b) => {
+                if (sort === 'geral-desc') return b.geral - a.geral;
+                if (sort === 'geral-asc') return a.geral - b.geral;
+                if (sort === 'ano-asc') return a.year - b.year;
+                if (sort === 'ano-desc') return b.year - a.year;
+                return 0;
+            });
+
+            document.getElementById('card-count-label').innerText = `Mostrando ${filtered.length} de ${PLAYERS_DB.length} cartões sazonais`;
+
+            const grid = document.getElementById('cards-grid');
+            grid.innerHTML = '';
+
+            filtered.forEach(p => {
+                const isLegend = p.geral >= 90;
+                const cardEl = document.createElement('div');
+                cardEl.className = `bg-white rounded-xl p-4 border ${isLegend ? 'border-2 border-amber-400 gold-glow' : 'border-zinc-200'} shadow-sm hover:shadow-md transition flex flex-col justify-between relative overflow-hidden`;
+
+                cardEl.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between border-b border-zinc-100 pb-2 mb-3">
+                            <div>
+                                <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-400 text-black tracking-wider shadow-sm">
+                                    ${p.year}
+                                </span>
+                                <h4 class="font-black text-black text-base mt-1 leading-tight">${p.name}</h4>
+                                <span class="text-xs font-bold text-zinc-500">${p.pos} ${p.secPos.length ? '(' + p.secPos.join('/') + ')' : ''}</span>
+                            </div>
+                            <div class="text-right flex flex-col items-end">
+                                <span class="text-2xl font-black ${isLegend ? 'text-amber-500' : 'text-black'}">${p.geral}</span>
+                                <span class="block text-[9px] uppercase font-black text-zinc-400">Geral</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-1 bg-zinc-50 rounded-lg p-2 text-center text-xs mb-3 border border-zinc-100">
+                            <div>
+                                <span class="block text-[9px] text-zinc-400 font-bold uppercase">DEF</span>
+                                <span class="font-bold text-blue-600">${p.def}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] text-zinc-400 font-bold uppercase">MEI</span>
+                                <span class="font-bold text-emerald-600">${p.mei}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] text-zinc-400 font-bold uppercase">ATA</span>
+                                <span class="font-bold text-rose-600">${p.ata}</span>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-zinc-600 leading-relaxed italic">
+                            "${p.desc}"
+                        </p>
+                    </div>
+
+                    <div class="mt-4 pt-2 border-t border-zinc-100 flex items-center justify-between text-[10px] text-zinc-400">
+                        <span class="font-semibold text-zinc-600">Era: ${p.era.split(':')[0]}</span>
+                        <div class="sfc-shield-container">
+                            <div class="sfc-shield-sm" style="width:16px; height:20px;">
+                                <div class="sfc-header" style="font-size:4px;">SFC</div>
+                                <div class="sfc-body"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(cardEl);
+            });
+        }
+
+        /* ================= ANALYTICS ================= */
+        function initCharts() {
+            const ctxRadar = document.getElementById('chart-eras-radar').getContext('2d');
+            erasRadarChart = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Defesa', 'Meio-Campo', 'Ataque', 'Geral Médio', 'Sintonia'],
+                    datasets: [
+                        {
+                            label: 'Era Pelé (1956-1974)',
+                            data: [88, 92, 95, 93, 98],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.25)'
+                        },
+                        {
+                            label: '2ª/3ª Gen Meninos (2002-2014)',
+                            data: [84, 89, 93, 89, 93],
+                            borderColor: '#000000',
+                            backgroundColor: 'rgba(0, 0, 0, 0.15)'
+                        },
+                        {
+                            label: 'Era Contemporânea (2015-2025)',
+                            data: [82, 83, 85, 83, 86],
+                            borderColor: '#71717a',
+                            backgroundColor: 'rgba(113, 113, 122, 0.2)'
+                        }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: { r: { suggestedMin: 60, suggestedMax: 100 } },
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }
+                }
+            });
+
+            const topPlayers = [...PLAYERS_DB].sort((a, b) => b.geral - a.geral).slice(0, 10);
+            const ctxBar = document.getElementById('chart-top-players').getContext('2d');
+            topPlayersChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: topPlayers.map(p => `${p.name.split(' ')[0]} ('${p.year.toString().slice(2)})`),
+                    datasets: [{
+                        label: 'Overall Geral',
+                        data: topPlayers.map(p => p.geral),
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: { y: { min: 80, max: 100 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
